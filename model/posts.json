@@ -1,0 +1,25 @@
+[
+    {
+        "post_id": 1,
+        "title": "백엔드서버테스트",
+        "author": "혜융",
+        "date": "2024-10-31T01:40:37",
+        "likes": 10,
+        "comments_count": 2,
+        "views": 1000,
+        "content": "저는 정혜윤입니다~~",
+        "image_url": "/images/hiello.jpeg"
+        
+    },
+    {
+        "post_id": 2,
+        "title": "바보",
+        "author": "yuni",
+        "date": "2024-10-31T01:45:37",
+        "likes": 2,
+        "comments_count": 1,
+        "views": 24,
+        "content": "바다의 보배라는 뜻",
+        "image_url": null
+    }
+]

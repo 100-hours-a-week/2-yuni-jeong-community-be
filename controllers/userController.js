@@ -64,3 +64,9 @@ export const login = (req, res) => {
         res.status(200).json({ message: "login_success", data: { user_id: user.user_id } });
     });
 };
+
+export const getUserById = (userId) => {
+    const usersFilePath = path.join(__dirname, '../model/users.json');
+    const users = JSON.parse(fs.readFileSync(usersFilePath, 'utf-8'));
+    return users.find(user => user.user_id === userId);
+};

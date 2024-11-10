@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 const router = express.Router();
 
 const postsFilePath = path.join(__dirname, '../model/posts.json');
+const commentsFilePath = path.join(__dirname, '../model/comments.json');
 
 router.get('/', (req, res) => {
     fs.readFile(postsFilePath, 'utf8', (err, data) => {
@@ -35,6 +36,19 @@ router.get('/:postId', (req, res) => {
         }
 
         res.status(200).json({ message: "게시글 조회 성공", data: post });
+    });
+});
+
+router.get('/:post_id/comments', (req, res) => {
+    const postId = req.params.post_id;
+
+    fs.readFile(commentsFilePath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ message: "서버 에러", data: null })
+            
+        const commentsData = JSON.parse(data);
+        const comments = commentsData[postId] || [];
+        
+        return res.status(200).json({ message: "댓글 조회 성공", data: comments });
     });
 });
 

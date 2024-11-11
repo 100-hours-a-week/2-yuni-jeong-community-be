@@ -110,3 +110,41 @@ export const createPost = (req, res) => {
         });
     });
 };
+
+// 댓글 작성
+export const createComment = (req, res) => {
+    const postId = req.params.post_id;
+    const { user_id, content } = req.body;
+
+    if (!user_id || !content) {
+        return res.status(400).json({ message: "잘못된 요청", data: null });
+    }
+
+    const author = getUserById(user_id);
+    if (!author) {
+        return res.status(404).json({ message: "사용자를 찾을 수 없습니다.", data: null });
+    }
+
+    fs.readFile(commentsFilePath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+
+        const commentsData = JSON.parse(data);
+        const newComment = {
+            author: author.nickname,
+            profile_image: author.profile_image,
+            content,
+            date: new Date().toISOString(),
+        };
+
+        if (!commentsData[postId]) {
+            commentsData[postId] = [];
+        }
+
+        commentsData[postId].push(newComment);
+
+        fs.writeFile(commentsFilePath, JSON.stringify(commentsData), 'utf8', (writeErr) => {
+            if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
+            res.status(201).json({ message: "댓글 작성 완료", data: newComment });
+        });
+    });
+};

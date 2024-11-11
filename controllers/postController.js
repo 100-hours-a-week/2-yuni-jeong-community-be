@@ -9,6 +9,10 @@ const __dirname = path.dirname(__filename);
 const postsFilePath = path.join(__dirname, '../model/posts.json');
 const commentsFilePath = path.join(__dirname, '../model/comments.json');
 
+
+
+/* -------------------------- 게시글 API -------------------------- */
+
 // 모든 게시글 조회
 export const getAllPosts = (req, res) => {
     const page = parseInt(req.query.page) || 1; // 요청된 페이지 번호
@@ -37,7 +41,7 @@ export const getAllPosts = (req, res) => {
 
 };
 
-// 특정 게시글 조회
+// 게시글 상세 조회
 export const getPostById = (req, res) => {
     const postId = parseInt(req.params.postId, 10);
 
@@ -61,20 +65,6 @@ export const getPostById = (req, res) => {
         };
 
         res.status(200).json({ message: "게시글 조회 성공", data: postWithAuthor });
-    });
-};
-
-// 댓글 조회
-export const getCommentsByPostId = (req, res) => {
-    const postId = req.params.post_id;
-
-    fs.readFile(commentsFilePath, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ message: "서버 에러", data: null });
-            
-        const commentsData = JSON.parse(data);
-        const comments = commentsData[postId] || [];
-        
-        return res.status(200).json({ message: "댓글 조회 성공", data: comments });
     });
 };
 
@@ -111,10 +101,76 @@ export const createPost = (req, res) => {
     });
 };
 
+// 게시글 삭제
+export const deletePost = (req, res) => {
+    const postId = parseInt(req.params.postId, 10);
+
+    fs.readFile(postsFilePath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+
+        const posts = JSON.parse(data);
+        const postIndex = posts.findIndex(post => post.post_id === postId);
+
+        if (postIndex === -1) {
+            return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
+        }
+
+        posts.splice(postIndex, 1);
+
+        fs.writeFile(postsFilePath, JSON.stringify(posts), 'utf8', (writeErr) => {
+            if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
+            res.status(200).json({ message: "게시글 삭제 완료", data: null });
+        });
+    });
+};
+
+// 게시글 수정
+export const updatePost = (req, res) => {
+    const postId = parseInt(req.params.postId, 10);
+    const { title, content, image_url } = req.body;
+
+    if (!title || !content) {
+        return res.status(400).json({ message: "잘못된 요청", data: null });
+    }
+
+    fs.readFile(postsFilePath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+
+        try {
+            const posts = JSON.parse(data);
+            const postIndex = posts.findIndex(post => post.post_id === postId);
+
+            if (postIndex === -1) {
+                return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
+            }
+
+            // 기존 게시글 업데이트
+            posts[postIndex] = { 
+                ...posts[postIndex], 
+                title, 
+                content, 
+                image_url: image_url || posts[postIndex].image_url 
+            };
+
+            fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (writeErr) => {
+                if (writeErr) return res.status(500).json({ message: "파일 쓰기 에러", data: null });
+                res.status(200).json({ message: "수정 완료", data: posts[postIndex] });
+            });
+        } catch (parseErr) {
+            console.error("JSON 파싱 오류:", parseErr);
+            return res.status(500).json({ message: "데이터 파싱 중 오류 발생", data: null });
+        }
+    });
+};
+
+
+/* -------------------------- 댓글 API -------------------------- */
+
 // 댓글 작성
 export const createComment = (req, res) => {
     const postId = req.params.post_id;
     const { user_id, content } = req.body;
+    const commentsForPost = commentsData[postId] || [];
 
     if (!user_id || !content) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
@@ -130,6 +186,7 @@ export const createComment = (req, res) => {
 
         const commentsData = JSON.parse(data);
         const newComment = {
+            comment_id: commentsForPost.length + 1,
             author: author.nickname,
             profile_image: author.profile_image,
             content,
@@ -145,6 +202,53 @@ export const createComment = (req, res) => {
         fs.writeFile(commentsFilePath, JSON.stringify(commentsData), 'utf8', (writeErr) => {
             if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
             res.status(201).json({ message: "댓글 작성 완료", data: newComment });
+        });
+    });
+};
+
+// 댓글 조회
+export const getCommentsByPostId = (req, res) => {
+    const postId = req.params.post_id;
+
+    fs.readFile(commentsFilePath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+            
+        const commentsData = JSON.parse(data);
+        const comments = commentsData[postId] || [];
+        
+        return res.status(200).json({ message: "댓글 조회 성공", data: comments });
+    });
+};
+
+// 댓글 삭제
+export const deleteComment = (req, res) => {
+    const postId = req.params.post_id;
+    const commentId = parseInt(req.params.comment_id, 10);
+
+    fs.readFile(commentsFilePath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+
+        const commentsData = JSON.parse(data);
+
+        // postId 게시글에 해당하는 댓글들 찾기
+        const postComments = commentsData[postId];
+        if (!postComments) {
+            return res.status(404).json({ message: "댓글을 찾을 수 없습니다.", data: null });
+        }
+
+        // commentId로 특정 댓글 찾기
+        const commentIndex = postComments.findIndex(comment => comment.comment_id === commentId);
+        if (commentIndex === -1) {
+            return res.status(404).json({ message: "해당 댓글이 없습니다.", data: null });
+        }
+
+        // 댓글 삭제
+        postComments.splice(commentIndex, 1);
+
+        // 변경된 댓글 데이터를 파일에 저장
+        fs.writeFile(commentsFilePath, JSON.stringify(commentsData), 'utf8', (writeErr) => {
+            if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
+            res.status(200).json({ message: "댓글 삭제 완료", data: null });
         });
     });
 };

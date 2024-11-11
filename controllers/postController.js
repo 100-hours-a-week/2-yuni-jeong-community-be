@@ -9,6 +9,10 @@ const __dirname = path.dirname(__filename);
 const postsFilePath = path.join(__dirname, '../model/posts.json');
 const commentsFilePath = path.join(__dirname, '../model/comments.json');
 
+
+
+/* -------------------------- 게시글 API -------------------------- */
+
 // 모든 게시글 조회
 export const getAllPosts = (req, res) => {
     const page = parseInt(req.query.page) || 1; // 요청된 페이지 번호
@@ -37,7 +41,7 @@ export const getAllPosts = (req, res) => {
 
 };
 
-// 특정 게시글 조회
+// 게시글 상세 조회
 export const getPostById = (req, res) => {
     const postId = parseInt(req.params.postId, 10);
 
@@ -61,20 +65,6 @@ export const getPostById = (req, res) => {
         };
 
         res.status(200).json({ message: "게시글 조회 성공", data: postWithAuthor });
-    });
-};
-
-// 댓글 조회
-export const getCommentsByPostId = (req, res) => {
-    const postId = req.params.post_id;
-
-    fs.readFile(commentsFilePath, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ message: "서버 에러", data: null });
-            
-        const commentsData = JSON.parse(data);
-        const comments = commentsData[postId] || [];
-        
-        return res.status(200).json({ message: "댓글 조회 성공", data: comments });
     });
 };
 
@@ -134,6 +124,7 @@ export const deletePost = (req, res) => {
     });
 };
 
+/* -------------------------- 댓글 API -------------------------- */
 
 // 댓글 작성
 export const createComment = (req, res) => {
@@ -170,5 +161,19 @@ export const createComment = (req, res) => {
             if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
             res.status(201).json({ message: "댓글 작성 완료", data: newComment });
         });
+    });
+};
+
+// 댓글 조회
+export const getCommentsByPostId = (req, res) => {
+    const postId = req.params.post_id;
+
+    fs.readFile(commentsFilePath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+            
+        const commentsData = JSON.parse(data);
+        const comments = commentsData[postId] || [];
+        
+        return res.status(200).json({ message: "댓글 조회 성공", data: comments });
     });
 };

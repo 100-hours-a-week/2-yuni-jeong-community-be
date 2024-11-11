@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "post_id": 1,
+    "user_id": 1,
+    "title": "하이",
+    "content": "하ㅣㅇ",
+    "image_url": "",
+    "likes": 0,
+    "views": 0,
+    "comments_count": 0,
+    "date": "2024-11-11T04:54:44.825Z"
+  }
+]

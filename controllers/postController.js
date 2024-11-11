@@ -124,6 +124,46 @@ export const deletePost = (req, res) => {
     });
 };
 
+// 게시글 수정
+export const updatePost = (req, res) => {
+    const postId = parseInt(req.params.postId, 10);
+    const { title, content, image_url } = req.body;
+
+    if (!title || !content) {
+        return res.status(400).json({ message: "잘못된 요청", data: null });
+    }
+
+    fs.readFile(postsFilePath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+
+        try {
+            const posts = JSON.parse(data);
+            const postIndex = posts.findIndex(post => post.post_id === postId);
+
+            if (postIndex === -1) {
+                return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
+            }
+
+            // 기존 게시글 업데이트
+            posts[postIndex] = { 
+                ...posts[postIndex], 
+                title, 
+                content, 
+                image_url: image_url || posts[postIndex].image_url 
+            };
+
+            fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (writeErr) => {
+                if (writeErr) return res.status(500).json({ message: "파일 쓰기 에러", data: null });
+                res.status(200).json({ message: "수정 완료", data: posts[postIndex] });
+            });
+        } catch (parseErr) {
+            console.error("JSON 파싱 오류:", parseErr);
+            return res.status(500).json({ message: "데이터 파싱 중 오류 발생", data: null });
+        }
+    });
+};
+
+
 /* -------------------------- 댓글 API -------------------------- */
 
 // 댓글 작성

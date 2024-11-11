@@ -130,6 +130,7 @@ export const deletePost = (req, res) => {
 export const createComment = (req, res) => {
     const postId = req.params.post_id;
     const { user_id, content } = req.body;
+    const commentsForPost = commentsData[postId] || [];
 
     if (!user_id || !content) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
@@ -145,7 +146,7 @@ export const createComment = (req, res) => {
 
         const commentsData = JSON.parse(data);
         const newComment = {
-            comment_id: Date.now(),
+            comment_id: commentsForPost.length + 1,
             author: author.nickname,
             profile_image: author.profile_image,
             content,

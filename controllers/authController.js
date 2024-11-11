@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 const usersFilePath = path.join(__dirname, '../model/users.json');
 
 
-// 회원가입 로직
+// 회원가입
 export const register = (req, res) => {
     const { email, password, nickname, profile_image } = req.body;
 
@@ -28,7 +28,7 @@ export const register = (req, res) => {
         }
 
         const newUser = {
-            user_id: users.length + 1,
+            user_id: users.length + 1, // TODO: user_id UUID로 수정하기
             email,
             password,
             nickname,

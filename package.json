@@ -20,6 +20,7 @@
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-prettier": "^5.2.1",
     "express": "^4.21.1",
-    "prettier": "^3.3.3"
+    "prettier": "^3.3.3",
+    "uuid": "^11.0.3"
   }
 }

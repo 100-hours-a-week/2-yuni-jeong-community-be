@@ -111,6 +111,30 @@ export const createPost = (req, res) => {
     });
 };
 
+// 게시글 삭제
+export const deletePost = (req, res) => {
+    const postId = parseInt(req.params.postId, 10);
+
+    fs.readFile(postsFilePath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+
+        const posts = JSON.parse(data);
+        const postIndex = posts.findIndex(post => post.post_id === postId);
+
+        if (postIndex === -1) {
+            return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
+        }
+
+        posts.splice(postIndex, 1);
+
+        fs.writeFile(postsFilePath, JSON.stringify(posts), 'utf8', (writeErr) => {
+            if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
+            res.status(200).json({ message: "게시글 삭제 완료", data: null });
+        });
+    });
+};
+
+
 // 댓글 작성
 export const createComment = (req, res) => {
     const postId = req.params.post_id;

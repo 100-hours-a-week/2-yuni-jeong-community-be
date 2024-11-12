@@ -170,7 +170,6 @@ export const updatePost = (req, res) => {
 export const createComment = (req, res) => {
     const postId = req.params.post_id;
     const { user_id, content } = req.body;
-    const commentsForPost = commentsData[postId] || [];
 
     if (!user_id || !content) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
@@ -185,6 +184,7 @@ export const createComment = (req, res) => {
         if (err) return res.status(500).json({ message: "서버 에러", data: null });
 
         const commentsData = JSON.parse(data);
+        const commentsForPost = commentsData[postId] || [];
         const newComment = {
             comment_id: commentsForPost.length + 1,
             author: author.nickname,
@@ -217,6 +217,49 @@ export const getCommentsByPostId = (req, res) => {
         const comments = commentsData[postId] || [];
         
         return res.status(200).json({ message: "댓글 조회 성공", data: comments });
+    });
+};
+
+// 댓글 수정 API
+export const updateComment = (req, res) => {
+    const postId = parseInt(req.params.postId, 10);
+    const commentId = parseInt(req.params.commentId, 10);
+    const { content } = req.body;
+
+    if (!content) {
+        return res.status(400).json({ message: "잘못된 요청", data: null });
+    }
+
+    fs.readFile(commentsFilePath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+
+        try {
+            const commentsData = JSON.parse(data);
+
+            // 특정 게시글에 대한 댓글들 - commentsForPost
+            const commentsForPost = commentsData[postId];
+            if (!Array.isArray(commentsForPost)) {
+                return res.status(404).json({ message: "댓글을 찾을 수 없습니다.", data: null });
+            }
+
+            // commentId에 해당하는 댓글 - comment
+            const comment = commentsForPost.find((c) => c.comment_id === commentId);
+            if (!comment) {
+                return res.status(404).json({ message: "댓글을 찾을 수 없습니다.", data: null });
+            }
+
+            comment.content = content;
+
+            console.log(comment)
+
+            fs.writeFile(commentsFilePath, JSON.stringify(commentsData, null, 2), 'utf8', (writeErr) => {
+                if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
+                res.status(200).json({ message: "댓글 수정 완료", data: comment });
+            });
+        } catch (parseErr) {
+            console.error("JSON 파싱 오류:", parseErr);
+            return res.status(500).json({ message: "데이터 파싱 중 오류 발생", data: null });
+        }
     });
 };
 

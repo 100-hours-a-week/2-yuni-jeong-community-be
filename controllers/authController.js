@@ -60,7 +60,18 @@ export const login = (req, res) => {
             return res.status(400).json({ message: "이메일 또는 비밀번호가 잘못되었습니다.", data: null });
         }
         
-
+        req.session.user_id = user.user_id;
         res.status(200).json({ message: "login_success", data: { user_id: user.user_id } });
     });
 };
+
+export const logout = (req, res) => {
+    if (!req.session.user_id) {
+        return res.status(400).json({ message: "잘못된 요청", data: null });
+    }
+
+    req.session.destroy(err => {
+        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+        res.status(200).json({ message: "로그아웃 성공", data: null });
+    });
+}

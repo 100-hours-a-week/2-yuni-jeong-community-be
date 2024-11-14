@@ -1,4 +1,5 @@
 import { fileURLToPath } from 'url';
+import { getUserById } from './userController.js';
 import path from 'path';
 import fs from 'fs';
 
@@ -6,6 +7,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const usersFilePath = path.join(__dirname, '../model/users.json');
+
+export const getCurrentUser = (req, res) => {
+    if (!req.session.user_id) {
+        return res.status(401).json({message: "로그인이 필요합니다.", data: null});
+    }
+
+    const user = getUserById(req.session.user_id);
+    if(!user){
+        return res.status(404).json({message: "사용자를 찾을 수 없습니다." , data: null});
+    }
+
+    res.status(200).json({message: "유저 정보 조회 성공", data: { email: user.email ,nickname: user.nickname, profile_image: user.profile_image}});
+}
 
 
 // 회원가입
@@ -43,7 +57,7 @@ export const register = (req, res) => {
     });
 };
 
-// 로그인 로직
+// 로그인
 export const login = (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -65,6 +79,7 @@ export const login = (req, res) => {
     });
 };
 
+// 로그아웃
 export const logout = (req, res) => {
     if (!req.session.user_id) {
         return res.status(400).json({ message: "잘못된 요청", data: null });

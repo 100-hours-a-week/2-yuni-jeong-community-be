@@ -18,7 +18,14 @@ export const getCurrentUser = (req, res) => {
         return res.status(404).json({message: "사용자를 찾을 수 없습니다." , data: null});
     }
 
-    res.status(200).json({message: "유저 정보 조회 성공", data: { email: user.email ,nickname: user.nickname, profile_image: user.profile_image}});
+    res.status(200).json({
+        message: "유저 정보 조회 성공",
+        data: {
+            user_id: user.user_id,
+            email: user.email,
+            nickname: user.nickname,
+            profile_image: user.profile_image
+        }});
 }
 
 

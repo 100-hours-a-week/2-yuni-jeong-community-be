@@ -17,9 +17,11 @@
   "dependencies": {
     "@eslint/eslintrc": "^3.1.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-prettier": "^5.2.1",
     "express": "^4.21.1",
+    "express-session": "^1.18.1",
     "prettier": "^3.3.3",
     "uuid": "^11.0.3"
   }

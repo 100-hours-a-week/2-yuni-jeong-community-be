@@ -1,1 +1,24 @@
-[{"post_id":1,"user_id":1,"title":"\b하ㅏ하ㅏ하하하하","content":"111ddd","image_url":"","likes":0,"views":0,"comments_count":0,"date":"2024-11-18T04:13:21.068Z"},{"post_id":2,"user_id":1,"title":"dd","content":"dddd","image_url":"","likes":0,"views":0,"comments_count":0,"date":"2024-11-18T04:51:05.391Z"}]
+[
+  {
+    "post_id": 1,
+    "user_id": 1,
+    "title": "첫 글",
+    "content": "안녕하심까",
+    "image_url": "",
+    "likes": 0,
+    "views": 0,
+    "comments_count": 0,
+    "date": "2024-11-18T05:30:22.059Z"
+  },
+  {
+    "post_id": 2,
+    "user_id": 1,
+    "title": "안녕하세용",
+    "content": "안냥",
+    "image_url": "",
+    "likes": 0,
+    "views": 0,
+    "comments_count": 0,
+    "date": "2024-11-18T05:30:43.462Z"
+  }
+]

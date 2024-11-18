@@ -1,29 +1,22 @@
-[
-  null,
-  [
-    {
-      "comment_id": 1,
-      "author": "혜윤",
-      "profile_image": "",
-      "content": "안녕~",
-      "date": "2024-11-18T02:59:23.163Z"
-    },
-    {
-      "comment_id": 2,
-      "author": "혜윤",
-      "profile_image": "",
-      "content": "ㅇㅇㅇ",
-      "date": "2024-11-18T04:13:35.619Z"
-    }
-  ],
-  [
+{
+  "0": [],
+  "1": [
     {
       "comment_id": 1,
       "user_id": 1,
       "author": "혜윤",
       "profile_image": "",
       "content": "하이하이",
-      "date": "2024-11-18T04:51:50.886Z"
+      "date": "2024-11-18T05:30:27.352Z"
+    },
+    {
+      "comment_id": 2,
+      "user_id": 1,
+      "author": "혜윤",
+      "profile_image": "",
+      "content": "반가워용",
+      "date": "2024-11-18T05:30:34.122Z"
     }
-  ]
-]
+  ],
+  "2": []
+}

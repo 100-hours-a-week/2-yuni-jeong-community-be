@@ -2,8 +2,15 @@
   {
     "user_id": 1,
     "email": "hyoon1129@naver.com",
-    "password": "Hyoon1129?",
-    "nickname": "d혜융ㄴㄴd",
+    "password": "Hyoon1129!",
+    "nickname": "혜윤",
+    "profile_image": ""
+  },
+  {
+    "user_id": 2,
+    "email": "hyeyoon1129@naver.com",
+    "password": "Hyoon1129!",
+    "nickname": "유유눈d",
     "profile_image": ""
   }
 ]

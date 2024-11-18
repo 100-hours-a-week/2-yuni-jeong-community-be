@@ -44,6 +44,7 @@ export const getAllPosts = (req, res) => {
 // 게시글 상세 조회
 export const getPostById = (req, res) => {
     const postId = parseInt(req.params.postId, 10);
+    const user_id = req.session.user_id;
 
     fs.readFile(postsFilePath, 'utf8', (err, data) => {
         if (err) {
@@ -58,19 +59,31 @@ export const getPostById = (req, res) => {
         }
 
         const author = getUserById(post.user_id);
-        const postWithAuthor = {
-            ...post,
-            author: author ? author.nickname : "알 수 없음",
-            profile_image: author ? author.profile_image : null
-        };
+        const isAuthor = post.user_id === user_id;
 
-        res.status(200).json({ message: "게시글 조회 성공", data: postWithAuthor });
+        post.views += 1;
+
+        fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (writeErr) => {
+            if (writeErr) {
+                return res.status(500).json({ message: "조회수 업데이트 실패", data: null });
+            }
+
+            const postWithAuthor = {
+                ...post,
+                author: author ? author.nickname : "알 수 없음",
+                profile_image: author ? author.profile_image : null,
+                isAuthor
+            };
+
+            res.status(200).json({ message: "게시글 조회 성공", data: postWithAuthor });
+        });
     });
 };
 
 // 게시글 등록
 export const createPost = (req, res) => {
-    const { user_id, title, content, image_url } = req.body;
+    const { title, content, image_url } = req.body;
+    const user_id = req.session.user_id;
 
     if (!user_id || !title || !content) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
@@ -104,6 +117,7 @@ export const createPost = (req, res) => {
 // 게시글 삭제
 export const deletePost = (req, res) => {
     const postId = parseInt(req.params.postId, 10);
+    const user_id = req.session.user_id;
 
     fs.readFile(postsFilePath, 'utf8', (err, data) => {
         if (err) return res.status(500).json({ message: "서버 에러", data: null });
@@ -113,6 +127,11 @@ export const deletePost = (req, res) => {
 
         if (postIndex === -1) {
             return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
+        }
+        
+        // 작성자와 삭제하려는 user_id가 같은지 확인
+        if (posts[postIndex].user_id !== user_id) {
+            return res.status(403).json({ message: "권한이 없습니다.", data: null });
         }
 
         posts.splice(postIndex, 1);
@@ -128,6 +147,7 @@ export const deletePost = (req, res) => {
 export const updatePost = (req, res) => {
     const postId = parseInt(req.params.postId, 10);
     const { title, content, image_url } = req.body;
+    const user_id = req.session.user_id;
 
     if (!title || !content) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
@@ -142,6 +162,10 @@ export const updatePost = (req, res) => {
 
             if (postIndex === -1) {
                 return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
+            }
+
+            if (posts[postIndex].user_id !== user_id) {
+                return res.status(403).json({ message: "권한이 없습니다.", data: null });
             }
 
             // 기존 게시글 업데이트
@@ -169,7 +193,8 @@ export const updatePost = (req, res) => {
 // 댓글 작성
 export const createComment = (req, res) => {
     const postId = req.params.post_id;
-    const { user_id, content } = req.body;
+    const { content } = req.body;
+    const user_id = req.session.user_id;
 
     if (!user_id || !content) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
@@ -181,27 +206,51 @@ export const createComment = (req, res) => {
     }
 
     fs.readFile(commentsFilePath, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+        if (err) {
+            console.error('댓글 데이터 읽기 실패:', err);
+            return res.status(500).json({ message: '서버 에러', data: null });
+        }
 
         const commentsData = JSON.parse(data);
         const commentsForPost = commentsData[postId] || [];
         const newComment = {
             comment_id: commentsForPost.length + 1,
+            user_id,
             author: author.nickname,
             profile_image: author.profile_image,
             content,
             date: new Date().toISOString(),
         };
 
-        if (!commentsData[postId]) {
-            commentsData[postId] = [];
-        }
-
-        commentsData[postId].push(newComment);
+        commentsForPost.push(newComment);
+        commentsData[postId] = commentsForPost;
 
         fs.writeFile(commentsFilePath, JSON.stringify(commentsData), 'utf8', (writeErr) => {
-            if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
-            res.status(201).json({ message: "댓글 작성 완료", data: newComment });
+            if (writeErr) {
+                return res.status(500).json({ message: '서버 에러', data: null });
+            }
+
+            fs.readFile(postsFilePath, 'utf8', (postErr, postData) => {
+                if (postErr) {
+                    console.error("게시글 읽기 실패");
+                    return res.status(500).json({ message: '서버 에러', data: null });
+                }
+
+                const postsData = JSON.parse(postData);
+                const post = postsData.find((p) => p.post_id === parseInt(postId, 10));
+
+                if (post) {
+                    post.comments_count += 1;
+                    fs.writeFile(postsFilePath, JSON.stringify(postsData, null, 2), 'utf8', (updateErr) => {
+                        if (updateErr) {
+                            console.error('댓글 수 업데이트 실패:', updateErr);
+                            return res.status(500).json({ message: '서버 에러', data: null });
+                        }
+                    });
+                }
+
+                res.status(201).json({ message: '댓글 작성 완료', data: newComment });
+            });
         });
     });
 };
@@ -209,14 +258,25 @@ export const createComment = (req, res) => {
 // 댓글 조회
 export const getCommentsByPostId = (req, res) => {
     const postId = req.params.post_id;
+    const user_id = req.session.user_id;
 
     fs.readFile(commentsFilePath, 'utf8', (err, data) => {
         if (err) return res.status(500).json({ message: "서버 에러", data: null });
             
         const commentsData = JSON.parse(data);
         const comments = commentsData[postId] || [];
+
+        const commentsWithDetails = comments.map(comment => {
+            const author = getUserById(comment.user_id);
+            return {
+                ...comment,
+                author: author ? author.nickname : "알 수 없음",
+                profile_image: author ? author.profile_image : null,
+                isAuthor: comment.user_id === user_id,
+            };
+        });
         
-        return res.status(200).json({ message: "댓글 조회 성공", data: comments });
+        return res.status(200).json({ message: "댓글 조회 성공", data: commentsWithDetails });
     });
 };
 
@@ -225,6 +285,7 @@ export const updateComment = (req, res) => {
     const postId = parseInt(req.params.postId, 10);
     const commentId = parseInt(req.params.commentId, 10);
     const { content } = req.body;
+    const user_id = req.session.user_id;
 
     if (!content) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
@@ -233,33 +294,28 @@ export const updateComment = (req, res) => {
     fs.readFile(commentsFilePath, 'utf8', (err, data) => {
         if (err) return res.status(500).json({ message: "서버 에러", data: null });
 
-        try {
-            const commentsData = JSON.parse(data);
+        const commentsData = JSON.parse(data);
+        const commentsForPost = commentsData[postId];
 
-            // 특정 게시글에 대한 댓글들 - commentsForPost
-            const commentsForPost = commentsData[postId];
-            if (!Array.isArray(commentsForPost)) {
-                return res.status(404).json({ message: "댓글을 찾을 수 없습니다.", data: null });
-            }
-
-            // commentId에 해당하는 댓글 - comment
-            const comment = commentsForPost.find((c) => c.comment_id === commentId);
-            if (!comment) {
-                return res.status(404).json({ message: "댓글을 찾을 수 없습니다.", data: null });
-            }
-
-            comment.content = content;
-
-            console.log(comment)
-
-            fs.writeFile(commentsFilePath, JSON.stringify(commentsData, null, 2), 'utf8', (writeErr) => {
-                if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
-                res.status(200).json({ message: "댓글 수정 완료", data: comment });
-            });
-        } catch (parseErr) {
-            console.error("JSON 파싱 오류:", parseErr);
-            return res.status(500).json({ message: "데이터 파싱 중 오류 발생", data: null });
+        if (!commentsForPost) {
+            return res.status(404).json({ message: '댓글을 찾을 수 없습니다.', data: null });
         }
+
+        const comment = commentsForPost.find((c) => c.comment_id === commentId);
+        if (!comment || comment.user_id !== user_id) {
+            return res.status(403).json({ message: '권한이 없거나 댓글이 없습니다.', data: null });
+        }
+
+        comment.content = content;
+
+        fs.writeFile(commentsFilePath, JSON.stringify(commentsData, null, 2), 'utf8', (writeErr) => {
+            if (writeErr) {
+                console.error('댓글 데이터 쓰기 실패:', writeErr);
+                return res.status(500).json({ message: '서버 에러', data: null });
+            }
+
+            res.status(200).json({ message: '댓글 수정 완료', data: comment });
+        });
     });
 };
 
@@ -267,6 +323,7 @@ export const updateComment = (req, res) => {
 export const deleteComment = (req, res) => {
     const postId = req.params.post_id;
     const commentId = parseInt(req.params.comment_id, 10);
+    const user_id = req.session.user_id;
 
     fs.readFile(commentsFilePath, 'utf8', (err, data) => {
         if (err) return res.status(500).json({ message: "서버 에러", data: null });
@@ -285,13 +342,34 @@ export const deleteComment = (req, res) => {
             return res.status(404).json({ message: "해당 댓글이 없습니다.", data: null });
         }
 
+        if (postComments[commentIndex].user_id !== user_id) {
+            return res.status(403).json({ message: "권한이 없습니다.", data: null });
+        }
+
         // 댓글 삭제
         postComments.splice(commentIndex, 1);
 
         // 변경된 댓글 데이터를 파일에 저장
         fs.writeFile(commentsFilePath, JSON.stringify(commentsData), 'utf8', (writeErr) => {
             if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
-            res.status(200).json({ message: "댓글 삭제 완료", data: null });
+            fs.readFile(postsFilePath, 'utf8', (postErr, postData) => {
+                if (postErr) return res.status(500).json({ message: "서버 에러", data: null });
+
+                const posts = JSON.parse(postData);
+                const postIndex = posts.findIndex(p => p.post_id === parseInt(postId, 10));
+
+                if (postIndex !== -1) {
+                    posts[postIndex].comments_count -= 1;
+
+                    fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (updateErr) => {
+                        if (updateErr) return res.status(500).json({ message: "댓글 수 업데이트 실패", data: null });
+
+                        res.status(200).json({ message: "댓글 삭제 완료", data: null });
+                    });
+                } else {
+                    res.status(404).json({ message: "게시글을 찾을 수 없습니다.", data: null });
+                }
+            });
         });
     });
 };

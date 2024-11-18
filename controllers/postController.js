@@ -60,14 +60,23 @@ export const getPostById = (req, res) => {
 
         const author = getUserById(post.user_id);
         const isAuthor = post.user_id === user_id;
-        const postWithAuthor = {
-            ...post,
-            author: author ? author.nickname : "알 수 없음",
-            profile_image: author ? author.profile_image : null,
-            isAuthor
-        };
 
-        res.status(200).json({ message: "게시글 조회 성공", data: postWithAuthor });
+        post.views += 1;
+
+        fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (writeErr) => {
+            if (writeErr) {
+                return res.status(500).json({ message: "조회수 업데이트 실패", data: null });
+            }
+
+            const postWithAuthor = {
+                ...post,
+                author: author ? author.nickname : "알 수 없음",
+                profile_image: author ? author.profile_image : null,
+                isAuthor
+            };
+
+            res.status(200).json({ message: "게시글 조회 성공", data: postWithAuthor });
+        });
     });
 };
 
@@ -197,7 +206,10 @@ export const createComment = (req, res) => {
     }
 
     fs.readFile(commentsFilePath, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+        if (err) {
+            console.error('댓글 데이터 읽기 실패:', err);
+            return res.status(500).json({ message: '서버 에러', data: null });
+        }
 
         const commentsData = JSON.parse(data);
         const commentsForPost = commentsData[postId] || [];
@@ -210,15 +222,35 @@ export const createComment = (req, res) => {
             date: new Date().toISOString(),
         };
 
-        if (!commentsData[postId]) {
-            commentsData[postId] = [];
-        }
-
-        commentsData[postId].push(newComment);
+        commentsForPost.push(newComment);
+        commentsData[postId] = commentsForPost;
 
         fs.writeFile(commentsFilePath, JSON.stringify(commentsData), 'utf8', (writeErr) => {
-            if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
-            res.status(201).json({ message: "댓글 작성 완료", data: newComment });
+            if (writeErr) {
+                return res.status(500).json({ message: '서버 에러', data: null });
+            }
+
+            fs.readFile(postsFilePath, 'utf8', (postErr, postData) => {
+                if (postErr) {
+                    console.error("게시글 읽기 실패");
+                    return res.status(500).json({ message: '서버 에러', data: null });
+                }
+
+                const postsData = JSON.parse(postData);
+                const post = postsData.find((p) => p.post_id === parseInt(postId, 10));
+
+                if (post) {
+                    post.comments_count += 1;
+                    fs.writeFile(postsFilePath, JSON.stringify(postsData, null, 2), 'utf8', (updateErr) => {
+                        if (updateErr) {
+                            console.error('댓글 수 업데이트 실패:', updateErr);
+                            return res.status(500).json({ message: '서버 에러', data: null });
+                        }
+                    });
+                }
+
+                res.status(201).json({ message: '댓글 작성 완료', data: newComment });
+            });
         });
     });
 };
@@ -262,35 +294,28 @@ export const updateComment = (req, res) => {
     fs.readFile(commentsFilePath, 'utf8', (err, data) => {
         if (err) return res.status(500).json({ message: "서버 에러", data: null });
 
-        try {
-            const commentsData = JSON.parse(data);
+        const commentsData = JSON.parse(data);
+        const commentsForPost = commentsData[postId];
 
-            // 특정 게시글에 대한 댓글들 - commentsForPost
-            const commentsForPost = commentsData[postId];
-            if (!Array.isArray(commentsForPost)) {
-                return res.status(404).json({ message: "댓글을 찾을 수 없습니다.", data: null });
-            }
-
-            // commentId에 해당하는 댓글 - comment
-            const comment = commentsForPost.find((c) => c.comment_id === commentId);
-            if (!comment) {
-                return res.status(404).json({ message: "댓글을 찾을 수 없습니다.", data: null });
-            }
-
-            if (comment.user_id !== user_id) {
-                return res.status(403).json({ message: "권한이 없습니다.", data: null });
-            }
-
-            comment.content = content;
-
-            fs.writeFile(commentsFilePath, JSON.stringify(commentsData, null, 2), 'utf8', (writeErr) => {
-                if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
-                res.status(200).json({ message: "댓글 수정 완료", data: comment });
-            });
-        } catch (parseErr) {
-            console.error("JSON 파싱 오류:", parseErr);
-            return res.status(500).json({ message: "데이터 파싱 중 오류 발생", data: null });
+        if (!commentsForPost) {
+            return res.status(404).json({ message: '댓글을 찾을 수 없습니다.', data: null });
         }
+
+        const comment = commentsForPost.find((c) => c.comment_id === commentId);
+        if (!comment || comment.user_id !== user_id) {
+            return res.status(403).json({ message: '권한이 없거나 댓글이 없습니다.', data: null });
+        }
+
+        comment.content = content;
+
+        fs.writeFile(commentsFilePath, JSON.stringify(commentsData, null, 2), 'utf8', (writeErr) => {
+            if (writeErr) {
+                console.error('댓글 데이터 쓰기 실패:', writeErr);
+                return res.status(500).json({ message: '서버 에러', data: null });
+            }
+
+            res.status(200).json({ message: '댓글 수정 완료', data: comment });
+        });
     });
 };
 
@@ -317,7 +342,7 @@ export const deleteComment = (req, res) => {
             return res.status(404).json({ message: "해당 댓글이 없습니다.", data: null });
         }
 
-        if (comment.user_id !== user_id) {
+        if (postComments[commentIndex].user_id !== user_id) {
             return res.status(403).json({ message: "권한이 없습니다.", data: null });
         }
 
@@ -327,7 +352,24 @@ export const deleteComment = (req, res) => {
         // 변경된 댓글 데이터를 파일에 저장
         fs.writeFile(commentsFilePath, JSON.stringify(commentsData), 'utf8', (writeErr) => {
             if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
-            res.status(200).json({ message: "댓글 삭제 완료", data: null });
+            fs.readFile(postsFilePath, 'utf8', (postErr, postData) => {
+                if (postErr) return res.status(500).json({ message: "서버 에러", data: null });
+
+                const posts = JSON.parse(postData);
+                const postIndex = posts.findIndex(p => p.post_id === parseInt(postId, 10));
+
+                if (postIndex !== -1) {
+                    posts[postIndex].comments_count -= 1;
+
+                    fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (updateErr) => {
+                        if (updateErr) return res.status(500).json({ message: "댓글 수 업데이트 실패", data: null });
+
+                        res.status(200).json({ message: "댓글 삭제 완료", data: null });
+                    });
+                } else {
+                    res.status(404).json({ message: "게시글을 찾을 수 없습니다.", data: null });
+                }
+            });
         });
     });
 };

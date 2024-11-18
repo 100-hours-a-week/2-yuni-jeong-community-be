@@ -2,23 +2,12 @@
   {
     "post_id": 1,
     "user_id": 1,
-    "title": "첫 글",
-    "content": "안녕하심까",
+    "title": "하이",
+    "content": "하잉",
     "image_url": "",
-    "likes": 0,
-    "views": 0,
-    "comments_count": 0,
-    "date": "2024-11-18T05:30:22.059Z"
-  },
-  {
-    "post_id": 2,
-    "user_id": 1,
-    "title": "안녕하세용",
-    "content": "안냥",
-    "image_url": "",
-    "likes": 0,
-    "views": 0,
-    "comments_count": 0,
-    "date": "2024-11-18T05:30:43.462Z"
+    "likes": 1,
+    "views": 30,
+    "comments_count": 3,
+    "date": "2024-11-18T05:52:38.311Z"
   }
 ]

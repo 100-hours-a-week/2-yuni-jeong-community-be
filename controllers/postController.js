@@ -54,7 +54,6 @@ export const getPostById = (req, res) => {
 
         const posts = JSON.parse(data);
         const post = posts.find(p => p.post_id === postId);
-        const postImage = post.image_url;
 
         if (!post) {
             return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });

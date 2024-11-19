@@ -2,6 +2,7 @@ import { fileURLToPath } from 'url';
 import path from 'path';
 import fs from 'fs';
 import { deleteFile, getUploadFilePath } from '../utils/fileUtils.js';
+import bcrypt from 'bcrypt';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -41,8 +42,8 @@ export const updateUserProfile = (req, res) => {
 
         // 기존 이미지 삭제
         if (
-            newProfileImage && // 새 이미지가 업로드되었고,
-            user.profile_image && // 기존 이미지가 있으며,
+            newProfileImage &&
+            user.profile_image &&
             user.profile_image !== '/uploads/user-profile.jpg'
         ) {
             const oldImagePath = getUploadFilePath(path.basename(user.profile_image));
@@ -80,7 +81,7 @@ export const updatePassword = (req, res) => {
         return res.status(400).json({ message: "새로운 비밀번호를 입력해주세요.", data: null });
     }
 
-    fs.readFile(usersFilePath, 'utf8', (err, data) => {
+    fs.readFile(usersFilePath, 'utf8', async (err, data) => {
         if (err) return res.status(500).json({ message: "서버 에러", data: null });
 
         const users = JSON.parse(data);
@@ -90,7 +91,9 @@ export const updatePassword = (req, res) => {
             return res.status(404).json({ message: "찾을 수 없는 사용자입니다.", data: null });
         }
 
-        user.password = new_password;
+        const hashedPassword = await bcrypt.hash(new_password, 10);
+
+        user.password = hashedPassword;
 
         fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), 'utf8', (writeErr) => {
             if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });

@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "post_id": 1,
+    "user_id": 1,
+    "title": "안녕하세용",
+    "content": "안녕하십니까",
+    "image_url": "",
+    "likes": 0,
+    "views": 4,
+    "comments_count": 0,
+    "date": "2024-11-19T12:52:15.040Z"
+  },
+  {
+    "post_id": 2,
+    "user_id": 1,
+    "title": "게시글 테스트",
+    "content": "게시글 내용 입력",
+    "image_url": "/uploads/image-1732020817764-143452246.jpg",
+    "likes": 0,
+    "views": 2,
+    "comments_count": 0,
+    "date": "2024-11-19T12:53:37.767Z"
+  }
+]

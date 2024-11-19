@@ -1,1 +1,9 @@
-[]
+[
+  {
+    "user_id": 1,
+    "email": "hyoon1129@naver.com",
+    "password": "$2b$10$.gnvHEX9rcsThpJMn0/JqO9LzE4pX24gAbBl.xkluTA6NOy4suMU2",
+    "nickname": "혜윤",
+    "profile_image": "/uploads/profile_image-1732020465936-19908659.png"
+  }
+]

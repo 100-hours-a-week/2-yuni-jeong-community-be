@@ -16,8 +16,8 @@ const commentsFilePath = path.join(__dirname, '../model/comments.json');
 
 // 모든 게시글 조회
 export const getAllPosts = (req, res) => {
-    const page = parseInt(req.query.page) || 1; // 요청된 페이지 번호
-    const limit = 10; // 페이지당 표시할 게시글 수
+    const page = parseInt(req.params.page,) || 1; // 요청된 페이지 번호
+    const limit = 10;
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
 

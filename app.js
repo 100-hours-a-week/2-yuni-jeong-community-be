@@ -33,6 +33,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);
 app.use('/posts', postRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 
 app.listen(PORT, () => {
     console.log('http://localhost:8080 에서 서버 실행 중');

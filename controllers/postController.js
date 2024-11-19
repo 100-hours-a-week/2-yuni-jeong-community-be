@@ -53,6 +53,7 @@ export const getPostById = (req, res) => {
 
         const posts = JSON.parse(data);
         const post = posts.find(p => p.post_id === postId);
+        const postImage = post.image_url;
 
         if (!post) {
             return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
@@ -72,7 +73,8 @@ export const getPostById = (req, res) => {
                 ...post,
                 author: author ? author.nickname : "알 수 없음",
                 profile_image: author?.profile_image || '/uploads/user-profile.jpg',
-                isAuthor
+                image_url: post.image_url || '',
+                isAuthor,
             };
 
             res.status(200).json({ message: "게시글 조회 성공", data: postWithAuthor });
@@ -82,7 +84,7 @@ export const getPostById = (req, res) => {
 
 // 게시글 등록
 export const createPost = (req, res) => {
-    const { title, content, image_url } = req.body;
+    const { title, content } = req.body;
     const user_id = req.session.user_id;
 
     if (!user_id || !title || !content) {
@@ -98,7 +100,7 @@ export const createPost = (req, res) => {
             user_id,
             title,
             content,
-            image_url: image_url || "",
+            image_url: req.file ? `/uploads/${req.file.filename}` : '',
             likes: 0,
             views: 0,
             comments_count: 0,

@@ -1,1 +1,35 @@
-[]
+[
+  {
+    "post_id": 1,
+    "user_id": 1,
+    "title": "안녕하세용",
+    "content": "하잉",
+    "image_url": "",
+    "likes": 0,
+    "views": 12,
+    "comments_count": 0,
+    "date": "2024-11-19T06:23:11.516Z"
+  },
+  {
+    "post_id": 2,
+    "user_id": 1,
+    "title": "이미지테스트",
+    "content": "gkdl",
+    "image_url": "/uploads/image-1731998285792-810769473.jpeg",
+    "likes": 0,
+    "views": 35,
+    "comments_count": 0,
+    "date": "2024-11-19T06:38:05.797Z"
+  },
+  {
+    "post_id": 3,
+    "user_id": 1,
+    "title": "이미지",
+    "content": "이미지",
+    "image_url": "/uploads/image-1732000694467-850661131.png",
+    "likes": 0,
+    "views": 2,
+    "comments_count": 0,
+    "date": "2024-11-19T07:18:14.473Z"
+  }
+]

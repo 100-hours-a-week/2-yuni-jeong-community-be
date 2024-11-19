@@ -4,14 +4,14 @@ import upload from '../middleware/upload.js';
 
 const router = express.Router();
 
-router.get('/', getAllPosts);
+router.get('/page/:page', getAllPosts);
 router.get('/:postId', getPostById);
 router.get('/:post_id/comments', getCommentsByPostId);
 router.post('/', upload.single('image'), createPost);
 router.post('/:post_id/comments', createComment);
 router.delete('/:postId', deletePost);
 router.delete('/:post_id/comments/:comment_id', deleteComment);
-router.put('/:postId', upload.single('image'), updatePost);
-router.put('/:postId/comments/:commentId', updateComment);
+router.patch('/:postId', upload.single('image'), updatePost);
+router.patch('/:postId/comments/:commentId', updateComment);
 
 export default router;

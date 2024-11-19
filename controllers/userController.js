@@ -23,7 +23,7 @@ export const updateUserProfile = (req, res) => {
     }
 
     const { nickname, profile_image } = req.body;
-    if (!nickname && !profile_image) {
+    if (!nickname) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }
 
@@ -38,7 +38,11 @@ export const updateUserProfile = (req, res) => {
         }
 
         if (nickname) user.nickname = nickname;
-        if (profile_image) user.profile_image = profile_image;
+        if (profile_image === '') {
+            user.profile_image = '/uploads/user-profile.jpg';
+        } else if (profile_image) {
+            user.profile_image = profile_image;
+        }
 
         fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), 'utf8', (writeErr) => {
             if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });

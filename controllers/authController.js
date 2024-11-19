@@ -31,7 +31,7 @@ export const getCurrentUser = (req, res) => {
 
 // 회원가입
 export const register = (req, res) => {
-    const { email, password, nickname, profile_image } = req.body;
+    const { email, password, nickname } = req.body;
 
     // 필수 필드 체크
     if (!email || !password || !nickname) {
@@ -53,7 +53,7 @@ export const register = (req, res) => {
             email,
             password,
             nickname,
-            profile_image: profile_image || '/uploads/user-profile.jpg'
+            profile_image: req.file ? `/uploads/${req.file.filename}` : '/uploads/user-profile.jpg',
         };
 
         users.push(newUser);

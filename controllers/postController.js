@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { getUserById } from './userController.js';
+import { deleteFile, getUploadFilePath } from '../utils/fileUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -53,6 +54,7 @@ export const getPostById = (req, res) => {
 
         const posts = JSON.parse(data);
         const post = posts.find(p => p.post_id === postId);
+        const postImage = post.image_url;
 
         if (!post) {
             return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
@@ -72,7 +74,8 @@ export const getPostById = (req, res) => {
                 ...post,
                 author: author ? author.nickname : "알 수 없음",
                 profile_image: author?.profile_image || '/uploads/user-profile.jpg',
-                isAuthor
+                image_url: post.image_url || '',
+                isAuthor,
             };
 
             res.status(200).json({ message: "게시글 조회 성공", data: postWithAuthor });
@@ -82,7 +85,7 @@ export const getPostById = (req, res) => {
 
 // 게시글 등록
 export const createPost = (req, res) => {
-    const { title, content, image_url } = req.body;
+    const { title, content } = req.body;
     const user_id = req.session.user_id;
 
     if (!user_id || !title || !content) {
@@ -98,7 +101,7 @@ export const createPost = (req, res) => {
             user_id,
             title,
             content,
-            image_url: image_url || "",
+            image_url: req.file ? `/uploads/${req.file.filename}` : '',
             likes: 0,
             views: 0,
             comments_count: 0,
@@ -134,6 +137,14 @@ export const deletePost = (req, res) => {
             return res.status(403).json({ message: "권한이 없습니다.", data: null });
         }
 
+        const post = posts[postIndex];
+        const oldImage = post.image_url;
+
+        if (oldImage) {
+            const oldImagePath = getUploadFilePath(path.basename(post.image_url));
+            deleteFile(oldImagePath); 
+        }
+
         posts.splice(postIndex, 1);
 
         fs.writeFile(postsFilePath, JSON.stringify(posts), 'utf8', (writeErr) => {
@@ -146,7 +157,7 @@ export const deletePost = (req, res) => {
 // 게시글 수정
 export const updatePost = (req, res) => {
     const postId = parseInt(req.params.postId, 10);
-    const { title, content, image_url } = req.body;
+    const { title, content } = req.body;
     const user_id = req.session.user_id;
 
     if (!title || !content) {
@@ -168,12 +179,22 @@ export const updatePost = (req, res) => {
                 return res.status(403).json({ message: "권한이 없습니다.", data: null });
             }
 
+            // 기존 이미지 삭제
+            const post = posts[postIndex];
+            const oldImage = post.image_url;
+
+            // 기존 이미지 삭제
+            if (oldImage) {
+                const oldImagePath = getUploadFilePath(path.basename(post.image_url));
+                deleteFile(oldImagePath);
+            }
+
             // 기존 게시글 업데이트
             posts[postIndex] = { 
                 ...posts[postIndex], 
                 title, 
                 content, 
-                image_url: image_url || posts[postIndex].image_url 
+                image_url: req.file ? `/uploads/${req.file.filename}` : '',
             };
 
             fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (writeErr) => {

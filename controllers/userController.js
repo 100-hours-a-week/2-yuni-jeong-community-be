@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'url';
 import path from 'path';
 import fs from 'fs';
+import { deleteFile, getUploadFilePath } from '../utils/fileUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -22,7 +23,8 @@ export const updateUserProfile = (req, res) => {
         return res.status(401).json({ message: "로그인이 필요합니다.", data: null });
     }
 
-    const { nickname, profile_image } = req.body;
+    const { nickname } = req.body;
+    const newProfileImage = req.file ? `/uploads/${req.file.filename}` : null;
     if (!nickname) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }
@@ -37,11 +39,19 @@ export const updateUserProfile = (req, res) => {
             return res.status(404).json({ message: "찾을 수 없는 사용자입니다.", data: null });
         }
 
+        // 기존 이미지 삭제
+        if (
+            newProfileImage && // 새 이미지가 업로드되었고,
+            user.profile_image && // 기존 이미지가 있으며,
+            user.profile_image !== '/uploads/user-profile.jpg'
+        ) {
+            const oldImagePath = getUploadFilePath(path.basename(user.profile_image));
+            deleteFile(oldImagePath);
+        }
+
         if (nickname) user.nickname = nickname;
-        if (profile_image === '') {
-            user.profile_image = '/uploads/user-profile.jpg';
-        } else if (profile_image) {
-            user.profile_image = profile_image;
+        if (newProfileImage) {
+            user.profile_image = newProfileImage; // 새 프로필 이미지 반영
         }
 
         fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), 'utf8', (writeErr) => {
@@ -96,6 +106,42 @@ export const deleteUserAccount = (req, res) => {
     }
 
     const userId = req.session.user_id;
+
+    // 프로필 이미지 삭제
+    const deleteProfileImage = () => {
+        return new Promise((resolve, reject) => {
+            const user = getUserById(userId);
+            if (user && user.profile_image && user.profile_image.startsWith('/uploads/') && user.profile_image !== '/uploads/user-profile.jpg') {
+                const profileImagePath = getUploadFilePath(path.basename(user.profile_image));
+                deleteFile(profileImagePath);
+            }
+            resolve(); // 프로필 이미지 없더라도 정상 종료
+        });
+    };
+
+    // 게시글 이미지 삭제
+    const deletePostImages = () => {
+        return new Promise((resolve, reject) => {
+            fs.readFile(postsFilePath, 'utf8', (err, data) => {
+                if (err) {
+                    return reject({ message: "게시글 데이터 읽기 실패", status: 500 });
+                }
+
+                const posts = JSON.parse(data);
+                const userPosts = posts.filter(post => post.user_id === userId);
+
+                // 이미지 삭제
+                userPosts.forEach(post => {
+                    if (post.image_url && post.image_url.startsWith('/uploads/')) {
+                        const postImagePath = path.join(__dirname, '../uploads', path.basename(post.image_url));
+                        deleteFile(postImagePath);
+                    }
+                });
+
+                resolve(); // 모든 게시글 이미지 삭제 후 종료
+            });
+        });
+    };
 
     // 사용자 삭제
     const deleteUser = () => {
@@ -188,7 +234,9 @@ export const deleteUserAccount = (req, res) => {
     };
 
     // 삭제 절차 실행
-    deleteUser()
+    deleteProfileImage()
+        .then(() => deletePostImages())
+        .then(() => deleteUser())
         .then(() => deleteUserPosts())
         .then(() => deleteUserComments())
         .then(() => destroySession())

@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { getUserById } from './userController.js';
+import { deleteFile, getUploadFilePath } from '../utils/fileUtils.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -136,6 +137,14 @@ export const deletePost = (req, res) => {
             return res.status(403).json({ message: "권한이 없습니다.", data: null });
         }
 
+        const post = posts[postIndex];
+        const oldImage = post.image_url;
+
+        if (oldImage) {
+            const oldImagePath = getUploadFilePath(path.basename(post.image_url));
+            deleteFile(oldImagePath); 
+        }
+
         posts.splice(postIndex, 1);
 
         fs.writeFile(postsFilePath, JSON.stringify(posts), 'utf8', (writeErr) => {
@@ -168,6 +177,16 @@ export const updatePost = (req, res) => {
 
             if (posts[postIndex].user_id !== user_id) {
                 return res.status(403).json({ message: "권한이 없습니다.", data: null });
+            }
+
+            // 기존 이미지 삭제
+            const post = posts[postIndex];
+            const oldImage = post.image_url;
+
+            // 기존 이미지 삭제
+            if (oldImage) {
+                const oldImagePath = getUploadFilePath(path.basename(post.image_url));
+                deleteFile(oldImagePath);
             }
 
             // 기존 게시글 업데이트

@@ -32,7 +32,7 @@ export const getAllPosts = (req, res) => {
             return {
                 ...post,
                 author: author ? author.nickname : "알 수 없음",
-                profile_image: author ? author.profile_image : null
+                profile_image: author?.profile_image || '/uploads/user-profile.jpg',
             };
         });
 
@@ -71,7 +71,7 @@ export const getPostById = (req, res) => {
             const postWithAuthor = {
                 ...post,
                 author: author ? author.nickname : "알 수 없음",
-                profile_image: author ? author.profile_image : null,
+                profile_image: author?.profile_image || '/uploads/user-profile.jpg',
                 isAuthor
             };
 

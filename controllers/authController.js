@@ -24,15 +24,14 @@ export const getCurrentUser = (req, res) => {
             user_id: user.user_id,
             email: user.email,
             nickname: user.nickname,
-            profile_image: user.profile_image || '/images/profile-icon.png',
+            profile_image: user.profile_image || '/uploads/user-profile.jpg',
         }});
 }
 
 
 // 회원가입
 export const register = (req, res) => {
-    const { email, password, nickname } = req.body;
-    const profileImagePath = req.file ? `/uploads/${req.file.filename}` : '';
+    const { email, password, nickname, profile_image } = req.body;
 
     // 필수 필드 체크
     if (!email || !password || !nickname) {
@@ -54,7 +53,7 @@ export const register = (req, res) => {
             email,
             password,
             nickname,
-            profile_image: profileImagePath,
+            profile_image: profile_image || '/uploads/user-profile.jpg'
         };
 
         users.push(newUser);

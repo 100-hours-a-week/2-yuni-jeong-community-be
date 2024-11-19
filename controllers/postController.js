@@ -32,7 +32,7 @@ export const getAllPosts = (req, res) => {
             return {
                 ...post,
                 author: author ? author.nickname : "알 수 없음",
-                profile_image: author ? author.profile_image : null
+                profile_image: author?.profile_image || '/uploads/user-profile.jpg',
             };
         });
 
@@ -71,7 +71,7 @@ export const getPostById = (req, res) => {
             const postWithAuthor = {
                 ...post,
                 author: author ? author.nickname : "알 수 없음",
-                profile_image: author ? author.profile_image : null,
+                profile_image: author?.profile_image || '/uploads/user-profile.jpg',
                 isAuthor
             };
 
@@ -336,7 +336,7 @@ export const deleteComment = (req, res) => {
             return res.status(404).json({ message: "댓글을 찾을 수 없습니다.", data: null });
         }
 
-        // commentId로 특정 댓글 찾기
+        // commentId로 특정 댓글 인덱스 찾기
         const commentIndex = postComments.findIndex(comment => comment.comment_id === commentId);
         if (commentIndex === -1) {
             return res.status(404).json({ message: "해당 댓글이 없습니다.", data: null });

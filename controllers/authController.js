@@ -24,7 +24,7 @@ export const getCurrentUser = (req, res) => {
             user_id: user.user_id,
             email: user.email,
             nickname: user.nickname,
-            profile_image: user.profile_image
+            profile_image: user.profile_image || '/uploads/user-profile.jpg',
         }});
 }
 
@@ -53,8 +53,9 @@ export const register = (req, res) => {
             email,
             password,
             nickname,
-            profile_image: profile_image || ""
+            profile_image: profile_image || '/uploads/user-profile.jpg'
         };
+
         users.push(newUser);
 
         fs.writeFile(usersFilePath, JSON.stringify(users), 'utf8', (writeErr) => {
@@ -91,7 +92,6 @@ export const logout = (req, res) => {
     if (!req.session.user_id) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }
-
     req.session.destroy(err => {
         if (err) return res.status(500).json({ message: "서버 에러", data: null });
         res.status(200).json({ message: "로그아웃 성공", data: null });

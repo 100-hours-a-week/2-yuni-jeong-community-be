@@ -23,7 +23,7 @@ export const updateUserProfile = (req, res) => {
     }
 
     const { nickname, profile_image } = req.body;
-    if (!nickname && !profile_image) {
+    if (!nickname) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }
 
@@ -38,7 +38,11 @@ export const updateUserProfile = (req, res) => {
         }
 
         if (nickname) user.nickname = nickname;
-        if (profile_image) user.profile_image = profile_image;
+        if (profile_image === '') {
+            user.profile_image = '/uploads/user-profile.jpg';
+        } else if (profile_image) {
+            user.profile_image = profile_image;
+        }
 
         fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), 'utf8', (writeErr) => {
             if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
@@ -93,58 +97,105 @@ export const deleteUserAccount = (req, res) => {
 
     const userId = req.session.user_id;
 
-    fs.readFile(usersFilePath, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+    // 사용자 삭제
+    const deleteUser = () => {
+        return new Promise((resolve, reject) => {
+            fs.readFile(usersFilePath, 'utf8', (err, data) => {
+                if (err) {
+                    return reject({ message: "사용자 데이터 읽기 실패", status: 500 });
+                }
 
-        const users = JSON.parse(data);
-        const userIndex = users.findIndex(user => user.user_id === userId);
+                const users = JSON.parse(data);
+                const userIndex = users.findIndex(user => user.user_id === userId);
 
-        if (userIndex === -1) {
-            return res.status(404).json({ message: "찾을 수 없는 사용자입니다.", data: null });
-        }
+                if (userIndex === -1) {
+                    return reject({ message: "찾을 수 없는 사용자입니다.", status: 404 });
+                }
 
-        // 사용자 삭제
-        users.splice(userIndex, 1);
+                users.splice(userIndex, 1);
 
-        // 게시글 및 댓글 삭제 로직
-        fs.readFile(postsFilePath, 'utf8', (postErr, postsData) => {
-            if (postErr) return res.status(500).json({ message: "서버 에러", data: null });
-
-            const posts = JSON.parse(postsData);
-            const filteredPosts = posts.filter(post => post.user_id !== userId);
-
-            fs.writeFile(postsFilePath, JSON.stringify(filteredPosts, null, 2), 'utf8', (writePostErr) => {
-                if (writePostErr) return res.status(500).json({ message: "게시글 삭제 실패", data: null });
-
-                fs.readFile(commentsFilePath, 'utf8', (commentErr, commentsData) => {
-                    if (commentErr) return res.status(500).json({ message: "서버 에러", data: null });
-
-                    const comments = JSON.parse(commentsData);
-                    const filteredComments = {};
-
-                    Object.keys(comments).forEach(postId => {
-                        const postComments = comments[postId];
-                        if (Array.isArray(postComments)) {
-                            filteredComments[postId] = postComments.filter(comment => comment.user_id !== userId);
-                        } else {
-                            filteredComments[postId] = [];
-                        }
-                    });
-
-
-                    fs.writeFile(commentsFilePath, JSON.stringify(filteredComments, null, 2), 'utf8', (writeCommentErr) => {
-                        if (writeCommentErr) return res.status(500).json({ message: "댓글 삭제 실패", data: null });
-
-                        // 세션 종료
-                        req.session.destroy(err => {
-                            if (err) {
-                                return res.status(500).json({ message: "세션 종료 실패", data: null });
-                            }
-                            res.status(200).json({ message: "회원 탈퇴 성공", data: null });
-                        });
-                    });
+                fs.writeFile(usersFilePath, JSON.stringify(users, null, 2), 'utf8', (writeErr) => {
+                    if (writeErr) {
+                        return reject({ message: "사용자 삭제 실패", status: 500 });
+                    }
+                    resolve();
                 });
             });
         });
-    });
+    };
+
+    // 게시글 삭제
+    const deleteUserPosts = () => {
+        return new Promise((resolve, reject) => {
+            fs.readFile(postsFilePath, 'utf8', (err, data) => {
+                if (err) {
+                    return reject({ message: "게시글 데이터 읽기 실패", status: 500 });
+                }
+
+                const posts = JSON.parse(data);
+                const filteredPosts = posts.filter(post => post.user_id !== userId);
+
+                fs.writeFile(postsFilePath, JSON.stringify(filteredPosts, null, 2), 'utf8', (writeErr) => {
+                    if (writeErr) {
+                        return reject({ message: "게시글 삭제 실패", status: 500 });
+                    }
+                    resolve();
+                });
+            });
+        });
+    };
+
+    // 댓글 삭제
+    const deleteUserComments = () => {
+        return new Promise((resolve, reject) => {
+            fs.readFile(commentsFilePath, 'utf8', (err, data) => {
+                if (err) {
+                    return reject({ message: "댓글 데이터 읽기 실패", status: 500 });
+                }
+
+                const comments = JSON.parse(data);
+                const filteredComments = {};
+
+                Object.keys(comments).forEach(postId => {
+                    const postComments = comments[postId];
+                    if (Array.isArray(postComments)) {
+                        filteredComments[postId] = postComments.filter(comment => comment.user_id !== userId);
+                    } else {
+                        filteredComments[postId] = [];
+                    }
+                });
+
+                fs.writeFile(commentsFilePath, JSON.stringify(filteredComments, null, 2), 'utf8', (writeErr) => {
+                    if (writeErr) {
+                        return reject({ message: "댓글 삭제 실패", status: 500 });
+                    }
+                    resolve();
+                });
+            });
+        });
+    };
+
+    // 세션 종료
+    const destroySession = () => {
+        return new Promise((resolve, reject) => {
+            req.session.destroy(err => {
+                if (err) {
+                    return reject({ message: "세션 종료 실패", status: 500 });
+                }
+                resolve();
+            });
+        });
+    };
+
+    // 삭제 절차 실행
+    deleteUser()
+        .then(() => deleteUserPosts())
+        .then(() => deleteUserComments())
+        .then(() => destroySession())
+        .then(() => {
+            res.status(200).json({ message: "회원 탈퇴 성공", data: null });
+        })
+        .catch(err => {
+            res.status(err.status || 500).json({ message: err.message || "서버 에러", data: null });
+        });
 };

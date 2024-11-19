@@ -1,1 +1,46 @@
-[]
+[
+  {
+    "post_id": 1,
+    "user_id": 1,
+    "title": "안녕하세용",
+    "content": "안녕하십니까",
+    "image_url": "/uploads/image-1732024700464-199146455.jpeg",
+    "likes": 0,
+    "views": 29,
+    "comments_count": 2,
+    "date": "2024-11-19T12:52:15.040Z"
+  },
+  {
+    "post_id": 2,
+    "user_id": 1,
+    "title": "우리 모두",
+    "content": "힘내봐요~",
+    "image_url": "/uploads/image-1732025051226-487081367.jpeg",
+    "likes": 0,
+    "views": 38,
+    "comments_count": 2,
+    "date": "2024-11-19T12:53:37.767Z"
+  },
+  {
+    "post_id": 3,
+    "user_id": 2,
+    "title": "핑구",
+    "content": "꽥꽥",
+    "image_url": "/uploads/image-1732022286899-73774643.jpg",
+    "likes": 0,
+    "views": 26,
+    "comments_count": 1,
+    "date": "2024-11-19T13:18:06.901Z"
+  },
+  {
+    "post_id": 4,
+    "user_id": 3,
+    "title": "저메추 해주세요",
+    "content": "저녁 뭐 먹을까요?",
+    "image_url": "",
+    "likes": 0,
+    "views": 63,
+    "comments_count": 2,
+    "date": "2024-11-19T14:06:09.884Z"
+  }
+]

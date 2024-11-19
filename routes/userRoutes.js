@@ -5,7 +5,7 @@ import upload from '../middleware/upload.js';
 
 const router = express.Router();
 
-router.put('/:userId', upload.single('profile_image'), isAuthenticated, updateUserProfile);
+router.patch('/:userId', upload.single('profile_image'), isAuthenticated, updateUserProfile);
 router.patch('/password', isAuthenticated, updatePassword);
 router.delete('/', isAuthenticated, deleteUserAccount);
 

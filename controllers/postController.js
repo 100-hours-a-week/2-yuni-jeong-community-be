@@ -16,8 +16,8 @@ const commentsFilePath = path.join(__dirname, '../model/comments.json');
 
 // 모든 게시글 조회
 export const getAllPosts = (req, res) => {
-    const page = parseInt(req.query.page) || 1; // 요청된 페이지 번호
-    const limit = 10; // 페이지당 표시할 게시글 수
+    const page = parseInt(req.params.page,) || 1; // 요청된 페이지 번호
+    const limit = 10;
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
 
@@ -54,7 +54,6 @@ export const getPostById = (req, res) => {
 
         const posts = JSON.parse(data);
         const post = posts.find(p => p.post_id === postId);
-        const postImage = post.image_url;
 
         if (!post) {
             return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
@@ -183,10 +182,10 @@ export const updatePost = (req, res) => {
             const post = posts[postIndex];
             const oldImage = post.image_url;
 
-            // 기존 이미지 삭제
-            if (oldImage) {
-                const oldImagePath = getUploadFilePath(path.basename(post.image_url));
-                deleteFile(oldImagePath);
+            if (req.file) {
+                const oldImagePath = getUploadFilePath(path.basename(oldImage));
+                deleteFile(oldImagePath); // 기존 이미지 삭제
+                post.image_url = `/uploads/${req.file.filename}`;
             }
 
             // 기존 게시글 업데이트
@@ -194,7 +193,7 @@ export const updatePost = (req, res) => {
                 ...posts[postIndex], 
                 title, 
                 content, 
-                image_url: req.file ? `/uploads/${req.file.filename}` : '',
+                image_url: post.image_url,
             };
 
             fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (writeErr) => {

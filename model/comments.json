@@ -1,4 +1,67 @@
 {
   "0": [],
-  "1": []
+  "1": [
+    {
+      "comment_id": 1,
+      "user_id": 2,
+      "author": "핑구",
+      "profile_image": "/uploads/profile_image-1732021134051-720889401.jpg",
+      "content": "안녕하세요~~",
+      "date": "2024-11-19T12:59:05.891Z"
+    },
+    {
+      "comment_id": 2,
+      "user_id": 3,
+      "author": "유니",
+      "profile_image": "/uploads/user-profile.jpg",
+      "content": "안녕하세요!",
+      "date": "2024-11-19T13:43:32.069Z"
+    }
+  ],
+  "2": [
+    {
+      "comment_id": 1,
+      "user_id": 2,
+      "author": "핑구",
+      "profile_image": "/uploads/profile_image-1732021134051-720889401.jpg",
+      "content": "파이띵!!",
+      "date": "2024-11-19T12:59:16.909Z"
+    },
+    {
+      "comment_id": 2,
+      "user_id": 3,
+      "author": "유니",
+      "profile_image": "/uploads/user-profile.jpg",
+      "content": "화이팅 해봐여",
+      "date": "2024-11-19T13:57:42.922Z"
+    }
+  ],
+  "3": [
+    {
+      "comment_id": 1,
+      "user_id": 3,
+      "author": "유니",
+      "profile_image": "/uploads/user-profile.jpg",
+      "content": "핑구 귀엽네요",
+      "date": "2024-11-19T13:56:27.143Z"
+    }
+  ],
+  "4": [
+    {
+      "comment_id": 1,
+      "user_id": 2,
+      "author": "핑구",
+      "profile_image": "/uploads/profile_image-1732021134051-720889401.jpg",
+      "content": "제육볶음 어떠세요?",
+      "date": "2024-11-19T14:06:26.735Z"
+    },
+    {
+      "comment_id": 2,
+      "user_id": 1,
+      "author": "혜윤",
+      "profile_image": "/uploads/profile_image-1732020465936-19908659.png",
+      "content": "날씨도 추운데 뜨끈한 쌀국수 어때요?",
+      "date": "2024-11-19T14:06:45.207Z"
+    }
+  ]
 }

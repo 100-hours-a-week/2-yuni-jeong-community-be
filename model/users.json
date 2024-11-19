@@ -5,5 +5,19 @@
     "password": "$2b$10$.gnvHEX9rcsThpJMn0/JqO9LzE4pX24gAbBl.xkluTA6NOy4suMU2",
     "nickname": "혜윤",
     "profile_image": "/uploads/profile_image-1732020465936-19908659.png"
+  },
+  {
+    "user_id": 2,
+    "email": "hyeyoon@naver.com",
+    "password": "$2b$10$CsiGs.yO6WAqcL8lCU56P.qi56PvMSbSK1vSnjRa0uo9EtjusCvOe",
+    "nickname": "핑구",
+    "profile_image": "/uploads/profile_image-1732021134051-720889401.jpg"
+  },
+  {
+    "user_id": 3,
+    "email": "hyeyoon1129@naver.com",
+    "password": "$2b$10$bo/loe7NxaAZh.Jx6MGTU.I92mYNoh208Qjb6z7SSCe.rxGENmtO.",
+    "nickname": "유니",
+    "profile_image": "/uploads/user-profile.jpg"
   }
 ]

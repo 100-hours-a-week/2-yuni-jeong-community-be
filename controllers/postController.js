@@ -148,7 +148,7 @@ export const deletePost = (req, res) => {
 // 게시글 수정
 export const updatePost = (req, res) => {
     const postId = parseInt(req.params.postId, 10);
-    const { title, content, image_url } = req.body;
+    const { title, content } = req.body;
     const user_id = req.session.user_id;
 
     if (!title || !content) {
@@ -175,7 +175,7 @@ export const updatePost = (req, res) => {
                 ...posts[postIndex], 
                 title, 
                 content, 
-                image_url: image_url || posts[postIndex].image_url 
+                image_url: req.file ? `/uploads/${req.file.filename}` : '',
             };
 
             fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (writeErr) => {

@@ -4,9 +4,9 @@
     "user_id": 1,
     "title": "안녕하세용",
     "content": "하잉",
-    "image_url": "",
+    "image_url": "/uploads/image-1732002189845-276690770.jpeg",
     "likes": 0,
-    "views": 12,
+    "views": 46,
     "comments_count": 0,
     "date": "2024-11-19T06:23:11.516Z"
   },
@@ -17,7 +17,7 @@
     "content": "gkdl",
     "image_url": "/uploads/image-1731998285792-810769473.jpeg",
     "likes": 0,
-    "views": 35,
+    "views": 39,
     "comments_count": 0,
     "date": "2024-11-19T06:38:05.797Z"
   },
@@ -28,8 +28,19 @@
     "content": "이미지",
     "image_url": "/uploads/image-1732000694467-850661131.png",
     "likes": 0,
-    "views": 2,
+    "views": 3,
     "comments_count": 0,
     "date": "2024-11-19T07:18:14.473Z"
+  },
+  {
+    "post_id": 4,
+    "user_id": 1,
+    "title": "새이미지",
+    "content": "화이띵",
+    "image_url": "/uploads/image-1732002225886-777417735.jpeg",
+    "likes": 0,
+    "views": 5,
+    "comments_count": 0,
+    "date": "2024-11-19T07:43:31.273Z"
   }
 ]

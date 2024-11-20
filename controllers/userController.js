@@ -205,12 +205,12 @@ export const deleteUserAccount = (req, res) => {
                 const comments = JSON.parse(data);
                 const filteredComments = {};
 
-                Object.keys(comments).forEach(postId => {
-                    const postComments = comments[postId];
+                Object.keys(comments).forEach(post_id => {
+                    const postComments = comments[post_id];
                     if (Array.isArray(postComments)) {
-                        filteredComments[postId] = postComments.filter(comment => comment.user_id !== userId);
+                        filteredComments[post_id] = postComments.filter(comment => comment.user_id !== userId);
                     } else {
-                        filteredComments[postId] = [];
+                        filteredComments[post_id] = [];
                     }
                 });
 
@@ -249,4 +249,48 @@ export const deleteUserAccount = (req, res) => {
         .catch(err => {
             res.status(err.status || 500).json({ message: err.message || "서버 에러", data: null });
         });
+};
+
+// 이메일 중복 검사
+export const checkEmailAvailability = (req, res) => {
+    const { email } = req.query;
+
+    if (!email) {
+        return res.status(400).json({ message: "이메일을 입력해주세요.", data: null });
+    }
+
+    fs.readFile(usersFilePath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+
+        const users = JSON.parse(data);
+        const isEmailTaken = users.some(user => user.email === email);
+
+        if (isEmailTaken) {
+            return res.status(409).json({ message: "중복된 이메일입니다.", data: null });
+        }
+
+        return res.status(200).json({ message: "사용 가능한 이메일입니다.", data: null });
+    });
+};
+
+// 닉네임 중복 검사
+export const checkNicknameAvailability = (req, res) => {
+    const { nickname } = req.query;
+
+    if (!nickname) {
+        return res.status(400).json({ message: "닉네임을 입력해주세요.", data: null });
+    }
+
+    fs.readFile(usersFilePath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+
+        const users = JSON.parse(data);
+        const isNicknameTaken = users.some(user => user.nickname === nickname);
+
+        if (isNicknameTaken) {
+            return res.status(409).json({ message: "중복된 닉네임입니다.", data: null });
+        }
+
+        return res.status(200).json({ message: "사용 가능한 닉네임입니다.", data: null });
+    });
 };

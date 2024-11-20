@@ -44,7 +44,7 @@ export const getAllPosts = (req, res) => {
 
 // 게시글 상세 조회
 export const getPostById = (req, res) => {
-    const postId = req.params.postId;
+    const post_id = req.params.post_id;
     const user_id = req.session.user_id;
 
     fs.readFile(postsFilePath, 'utf8', (err, data) => {
@@ -53,7 +53,7 @@ export const getPostById = (req, res) => {
         }
 
         const posts = JSON.parse(data);
-        const post = posts.find(p => p.post_id === postId);
+        const post = posts.find(p => p.post_id === post_id);
 
         if (!post) {
             return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
@@ -118,14 +118,14 @@ export const createPost = (req, res) => {
 
 // 게시글 삭제
 export const deletePost = (req, res) => {
-    const postId = req.params.postId;
+    const post_id = req.params.post_id;
     const user_id = req.session.user_id;
 
     fs.readFile(postsFilePath, 'utf8', (err, data) => {
         if (err) return res.status(500).json({ message: "서버 에러", data: null });
 
         const posts = JSON.parse(data);
-        const postIndex = posts.findIndex(post => post.post_id === postId);
+        const postIndex = posts.findIndex(post => post.post_id === post_id);
 
         if (postIndex === -1) {
             return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
@@ -155,7 +155,7 @@ export const deletePost = (req, res) => {
 
 // 게시글 수정
 export const updatePost = (req, res) => {
-    const postId = req.params.postId;
+    const post_id = req.params.post_id;
     const { title, content } = req.body;
     const user_id = req.session.user_id;
 
@@ -168,7 +168,7 @@ export const updatePost = (req, res) => {
 
         try {
             const posts = JSON.parse(data);
-            const postIndex = posts.findIndex(post => post.post_id === postId);
+            const postIndex = posts.findIndex(post => post.post_id === post_id);
 
             if (postIndex === -1) {
                 return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
@@ -212,7 +212,7 @@ export const updatePost = (req, res) => {
 
 // 댓글 작성
 export const createComment = (req, res) => {
-    const postId = req.params.post_id;
+    const post_id = req.params.post_id;
     const { content } = req.body;
     const user_id = req.session.user_id;
 
@@ -233,8 +233,8 @@ export const createComment = (req, res) => {
 
         const commentsData = JSON.parse(data);
         
-        if (!commentsData[postId]) {
-            commentsData[postId] = [];
+        if (!commentsData[post_id]) {
+            commentsData[post_id] = [];
         }
 
 
@@ -247,7 +247,7 @@ export const createComment = (req, res) => {
             date: new Date().toISOString(),
         };
 
-        commentsData[postId].push(newComment);
+        commentsData[post_id].push(newComment);
 
         fs.writeFile(commentsFilePath, JSON.stringify(commentsData, null, 2), 'utf8', (writeErr) => {
             if (writeErr) {
@@ -261,7 +261,7 @@ export const createComment = (req, res) => {
                 }
 
                 const postsData = JSON.parse(postData);
-                const post = postsData.find((p) => p.post_id === postId);
+                const post = postsData.find((p) => p.post_id === post_id);
 
                 if (post) {
                     post.comments_count += 1;
@@ -281,7 +281,7 @@ export const createComment = (req, res) => {
 
 // 댓글 조회
 export const getCommentsByPostId = (req, res) => {
-    const postId = req.params.post_id;
+    const post_id = req.params.post_id;
     const user_id = req.session.user_id;
 
 
@@ -289,7 +289,7 @@ export const getCommentsByPostId = (req, res) => {
         if (err) return res.status(500).json({ message: "서버 에러", data: null });
             
         const commentsData = JSON.parse(data);
-        const comments = commentsData[postId] || [];
+        const comments = commentsData[post_id] || [];
 
         const commentsWithDetails = comments.map(comment => {
             const author = getUserById(comment.user_id);
@@ -307,8 +307,8 @@ export const getCommentsByPostId = (req, res) => {
 
 // 댓글 수정 API
 export const updateComment = (req, res) => {
-    const postId = req.params.postId;
-    const commentId = req.params.commentId;
+    const post_id = req.params.post_id;
+    const comment_id = req.params.comment_id;
     const { content } = req.body;
     const user_id = req.session.user_id;
 
@@ -320,13 +320,13 @@ export const updateComment = (req, res) => {
         if (err) return res.status(500).json({ message: "서버 에러", data: null });
 
         const commentsData = JSON.parse(data);
-        const commentsForPost = commentsData[postId];
+        const commentsForPost = commentsData[post_id];
 
         if (!commentsForPost) {
             return res.status(404).json({ message: '댓글을 찾을 수 없습니다.', data: null });
         }
 
-        const comment = commentsForPost.find((c) => c.comment_id === commentId);
+        const comment = commentsForPost.find((c) => c.comment_id === comment_id);
         if (!comment || comment.user_id !== user_id) {
             return res.status(403).json({ message: '권한이 없거나 댓글이 없습니다.', data: null });
         }
@@ -346,8 +346,8 @@ export const updateComment = (req, res) => {
 
 // 댓글 삭제
 export const deleteComment = (req, res) => {
-    const postId = req.params.post_id;
-    const commentId = req.params.comment_id;
+    const post_id = req.params.post_id;
+    const comment_id = req.params.comment_id;
     const user_id = req.session.user_id;
 
     fs.readFile(commentsFilePath, 'utf8', (err, data) => {
@@ -355,14 +355,14 @@ export const deleteComment = (req, res) => {
 
         const commentsData = JSON.parse(data);
 
-        // postId 게시글에 해당하는 댓글들 찾기
-        const postComments = commentsData[postId];
+        // post_id 게시글에 해당하는 댓글들 찾기
+        const postComments = commentsData[post_id];
         if (!postComments) {
             return res.status(404).json({ message: "댓글을 찾을 수 없습니다.", data: null });
         }
 
         // commentId로 특정 댓글 인덱스 찾기
-        const commentIndex = postComments.findIndex(comment => comment.comment_id === commentId);
+        const commentIndex = postComments.findIndex(comment => comment.comment_id === comment_id);
         if (commentIndex === -1) {
             return res.status(404).json({ message: "해당 댓글이 없습니다.", data: null });
         }
@@ -381,7 +381,7 @@ export const deleteComment = (req, res) => {
                 if (postErr) return res.status(500).json({ message: "서버 에러", data: null });
 
                 const posts = JSON.parse(postData);
-                const postIndex = posts.findIndex(p => p.post_id === postId);
+                const postIndex = posts.findIndex(p => p.post_id === post_id);
 
                 if (postIndex !== -1) {
                     posts[postIndex].comments_count -= 1;

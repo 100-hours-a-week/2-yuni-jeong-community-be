@@ -3,13 +3,13 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { getUserById } from './userController.js';
 import { deleteFile, getUploadFilePath } from '../utils/fileUtils.js';
+import { v4 as uuidv4 } from 'uuid';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const postsFilePath = path.join(__dirname, '../model/posts.json');
 const commentsFilePath = path.join(__dirname, '../model/comments.json');
-
 
 
 /* -------------------------- 게시글 API -------------------------- */
@@ -44,7 +44,7 @@ export const getAllPosts = (req, res) => {
 
 // 게시글 상세 조회
 export const getPostById = (req, res) => {
-    const postId = parseInt(req.params.postId, 10);
+    const postId = req.params.postId;
     const user_id = req.session.user_id;
 
     fs.readFile(postsFilePath, 'utf8', (err, data) => {
@@ -96,7 +96,7 @@ export const createPost = (req, res) => {
 
         const posts = JSON.parse(data);
         const newPost = {
-            post_id: posts.length + 1,
+            post_id: uuidv4(),
             user_id,
             title,
             content,
@@ -118,7 +118,7 @@ export const createPost = (req, res) => {
 
 // 게시글 삭제
 export const deletePost = (req, res) => {
-    const postId = parseInt(req.params.postId, 10);
+    const postId = req.params.postId;
     const user_id = req.session.user_id;
 
     fs.readFile(postsFilePath, 'utf8', (err, data) => {
@@ -155,7 +155,7 @@ export const deletePost = (req, res) => {
 
 // 게시글 수정
 export const updatePost = (req, res) => {
-    const postId = parseInt(req.params.postId, 10);
+    const postId = req.params.postId;
     const { title, content } = req.body;
     const user_id = req.session.user_id;
 
@@ -232,9 +232,14 @@ export const createComment = (req, res) => {
         }
 
         const commentsData = JSON.parse(data);
-        const commentsForPost = commentsData[postId] || [];
+        
+        if (!commentsData[postId]) {
+            commentsData[postId] = [];
+        }
+
+
         const newComment = {
-            comment_id: commentsForPost.length + 1,
+            comment_id: uuidv4(),
             user_id,
             author: author.nickname,
             profile_image: author.profile_image,
@@ -242,10 +247,9 @@ export const createComment = (req, res) => {
             date: new Date().toISOString(),
         };
 
-        commentsForPost.push(newComment);
-        commentsData[postId] = commentsForPost;
+        commentsData[postId].push(newComment);
 
-        fs.writeFile(commentsFilePath, JSON.stringify(commentsData), 'utf8', (writeErr) => {
+        fs.writeFile(commentsFilePath, JSON.stringify(commentsData, null, 2), 'utf8', (writeErr) => {
             if (writeErr) {
                 return res.status(500).json({ message: '서버 에러', data: null });
             }
@@ -257,7 +261,7 @@ export const createComment = (req, res) => {
                 }
 
                 const postsData = JSON.parse(postData);
-                const post = postsData.find((p) => p.post_id === parseInt(postId, 10));
+                const post = postsData.find((p) => p.post_id === postId);
 
                 if (post) {
                     post.comments_count += 1;
@@ -279,6 +283,7 @@ export const createComment = (req, res) => {
 export const getCommentsByPostId = (req, res) => {
     const postId = req.params.post_id;
     const user_id = req.session.user_id;
+
 
     fs.readFile(commentsFilePath, 'utf8', (err, data) => {
         if (err) return res.status(500).json({ message: "서버 에러", data: null });
@@ -302,8 +307,8 @@ export const getCommentsByPostId = (req, res) => {
 
 // 댓글 수정 API
 export const updateComment = (req, res) => {
-    const postId = parseInt(req.params.postId, 10);
-    const commentId = parseInt(req.params.commentId, 10);
+    const postId = req.params.postId;
+    const commentId = req.params.commentId;
     const { content } = req.body;
     const user_id = req.session.user_id;
 
@@ -342,7 +347,7 @@ export const updateComment = (req, res) => {
 // 댓글 삭제
 export const deleteComment = (req, res) => {
     const postId = req.params.post_id;
-    const commentId = parseInt(req.params.comment_id, 10);
+    const commentId = req.params.comment_id;
     const user_id = req.session.user_id;
 
     fs.readFile(commentsFilePath, 'utf8', (err, data) => {
@@ -376,7 +381,7 @@ export const deleteComment = (req, res) => {
                 if (postErr) return res.status(500).json({ message: "서버 에러", data: null });
 
                 const posts = JSON.parse(postData);
-                const postIndex = posts.findIndex(p => p.post_id === parseInt(postId, 10));
+                const postIndex = posts.findIndex(p => p.post_id === postId);
 
                 if (postIndex !== -1) {
                     posts[postIndex].comments_count -= 1;

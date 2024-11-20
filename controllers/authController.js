@@ -3,6 +3,7 @@ import { getUserById } from './userController.js';
 import path from 'path';
 import fs from 'fs';
 import bcrypt from 'bcrypt';
+import { v4 as uuidv4 } from 'uuid';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -53,7 +54,7 @@ export const register = (req, res) => {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = {
-            user_id: users.length + 1,
+            user_id: uuidv4(),
             email,
             password: hashedPassword,
             nickname,

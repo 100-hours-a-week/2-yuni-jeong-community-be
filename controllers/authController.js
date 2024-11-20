@@ -80,8 +80,12 @@ export const login = (req, res) => {
         if (err) return res.status(500).json({ message: "서버 에러", data: null });
 
         const users = JSON.parse(data);
-        const user = users.find(u => u.email === email);
-
+        const user = users.find(u => u.email === email)
+        
+        if (!user) {
+            return res.status(400).json({ message: "이메일 또는 비밀번호가 잘못되었습니다.", data: null });
+        }
+        
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(400).json({ message: "이메일 또는 비밀번호가 잘못되었습니다.", data: null });

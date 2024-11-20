@@ -14,10 +14,10 @@
     "post_id": 2,
     "user_id": 1,
     "title": "우리 모두",
-    "content": "힘내봐요~",
+    "content": "힘내봐용",
     "image_url": "/uploads/image-1732025051226-487081367.jpeg",
     "likes": 0,
-    "views": 38,
+    "views": 41,
     "comments_count": 2,
     "date": "2024-11-19T12:53:37.767Z"
   },
@@ -28,8 +28,8 @@
     "content": "꽥꽥",
     "image_url": "/uploads/image-1732022286899-73774643.jpg",
     "likes": 0,
-    "views": 26,
-    "comments_count": 1,
+    "views": 29,
+    "comments_count": 2,
     "date": "2024-11-19T13:18:06.901Z"
   },
   {
@@ -42,5 +42,16 @@
     "views": 63,
     "comments_count": 2,
     "date": "2024-11-19T14:06:09.884Z"
+  },
+  {
+    "post_id": 5,
+    "user_id": 1,
+    "title": "하이",
+    "content": "새로운 글 작성",
+    "image_url": "/uploads/image-1732032006654-500000187.png",
+    "likes": 0,
+    "views": 1,
+    "comments_count": 0,
+    "date": "2024-11-19T16:00:06.662Z"
   }
 ]

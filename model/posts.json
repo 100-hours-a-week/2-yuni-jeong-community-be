@@ -1,57 +1,35 @@
 [
   {
-    "post_id": 1,
-    "user_id": 1,
-    "title": "안녕하세용",
-    "content": "안녕하십니까",
-    "image_url": "/uploads/image-1732024700464-199146455.jpeg",
+    "post_id": "121dd0cb-0d4e-40f4-9ae8-d9612453f679",
+    "user_id": "95cabfb6-4d11-4e29-be70-574b9b5c8d5e",
+    "title": "안녕하세요",
+    "content": "반가워요~",
+    "image_url": "/uploads/image-1732108682236-42976083.jpeg",
     "likes": 0,
-    "views": 29,
-    "comments_count": 2,
-    "date": "2024-11-19T12:52:15.040Z"
+    "views": 3,
+    "comments_count": 1,
+    "date": "2024-11-20T13:18:02.240Z"
   },
   {
-    "post_id": 2,
-    "user_id": 1,
-    "title": "우리 모두",
-    "content": "힘내봐용",
-    "image_url": "/uploads/image-1732025051226-487081367.jpeg",
-    "likes": 0,
-    "views": 41,
-    "comments_count": 2,
-    "date": "2024-11-19T12:53:37.767Z"
-  },
-  {
-    "post_id": 3,
-    "user_id": 2,
-    "title": "핑구",
-    "content": "꽥꽥",
-    "image_url": "/uploads/image-1732022286899-73774643.jpg",
-    "likes": 0,
-    "views": 29,
-    "comments_count": 2,
-    "date": "2024-11-19T13:18:06.901Z"
-  },
-  {
-    "post_id": 4,
-    "user_id": 3,
-    "title": "저메추 해주세요",
-    "content": "저녁 뭐 먹을까요?",
+    "post_id": "59810a4b-2841-492f-a96b-b5b095ebb5c1",
+    "user_id": "95cabfb6-4d11-4e29-be70-574b9b5c8d5e",
+    "title": "저메추",
+    "content": "뭐 먹을까요",
     "image_url": "",
     "likes": 0,
-    "views": 63,
-    "comments_count": 2,
-    "date": "2024-11-19T14:06:09.884Z"
+    "views": 6,
+    "comments_count": 1,
+    "date": "2024-11-20T13:18:12.492Z"
   },
   {
-    "post_id": 5,
-    "user_id": 1,
-    "title": "하이",
-    "content": "새로운 글 작성",
-    "image_url": "/uploads/image-1732032006654-500000187.png",
+    "post_id": "38c536eb-64d5-4707-a88c-c1b4d602d841",
+    "user_id": "f7c39971-cd38-4947-8c40-6922421020be",
+    "title": "핑구",
+    "content": "전 남극에서 왔어요",
+    "image_url": "/uploads/image-1732108817441-338173634.jpg",
     "likes": 0,
-    "views": 1,
+    "views": 5,
     "comments_count": 0,
-    "date": "2024-11-19T16:00:06.662Z"
+    "date": "2024-11-20T13:20:17.442Z"
   }
 ]

@@ -1,30 +1,16 @@
 [
   {
-    "user_id": 1,
+    "user_id": "95cabfb6-4d11-4e29-be70-574b9b5c8d5e",
     "email": "hyoon1129@naver.com",
-    "password": "$2b$10$WmNGrxeV5vzjGWAJgSFuJO3E1QwPPlGNJJX4bPVbrxuwp7aJ6cvly",
-    "nickname": "혜윤윤",
-    "profile_image": "/uploads/profile_image-1732064224167-483868161.jpg"
+    "password": "$2b$10$Vi7N3d3qC6fRED5VrsQO8.QtLX7PjAI88RAjQOsaswcJRxci5.yWq",
+    "nickname": "혜윤",
+    "profile_image": "/uploads/profile_image-1732105771651-377831385.jpg"
   },
   {
-    "user_id": 2,
+    "user_id": "f7c39971-cd38-4947-8c40-6922421020be",
     "email": "hyeyoon@naver.com",
-    "password": "$2b$10$CsiGs.yO6WAqcL8lCU56P.qi56PvMSbSK1vSnjRa0uo9EtjusCvOe",
+    "password": "$2b$10$xMvmNM9gDZXVp8OdVIjb8uSkdDbbpaJMiDtcccRQmDU62Hp2.UfFW",
     "nickname": "핑구",
-    "profile_image": "/uploads/profile_image-1732021134051-720889401.jpg"
-  },
-  {
-    "user_id": 3,
-    "email": "hyeyoon1129@naver.com",
-    "password": "$2b$10$bo/loe7NxaAZh.Jx6MGTU.I92mYNoh208Qjb6z7SSCe.rxGENmtO.",
-    "nickname": "유니",
-    "profile_image": "/uploads/user-profile.jpg"
-  },
-  {
-    "user_id": 4,
-    "email": "abc@naver.com",
-    "password": "$2b$10$MATN62AGsZejVPzRBie92udKyXSqRYgCN4xxMQhon0ZwCe0tUcWSW",
-    "nickname": "유유융",
-    "profile_image": "/uploads/user-profile.jpg"
+    "profile_image": "/uploads/profile_image-1732106117377-128651977.jpg"
   }
 ]

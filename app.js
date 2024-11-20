@@ -7,6 +7,10 @@ import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import postRoutes from './routes/postRoutes.js';
 import cors from 'cors';
+import { createStream } from 'rotating-file-stream';
+import morgan from 'morgan';
+import fileSystem from 'fs';
+import moment from 'moment-timezone';
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -29,6 +33,33 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
+// 로그 파일 생성
+morgan.token('date', (request, response, timezone) => {
+    return moment().tz(timezone).format('YYYY-MM-DD HH:mm:ss');
+});
+
+const logDirectory = path.join(__dirname, 'log');
+fileSystem.existsSync(logDirectory) || fileSystem.mkdirSync(logDirectory);
+
+const accessLogStream = createStream('access.log', {
+    interval: '1d', // 1일 단위
+    path: logDirectory,
+});
+
+// 시간대를 Asia/Seoul로 설정
+morgan.token('date', (request, response, timezone) => {
+    return moment().tz(timezone).format();
+});
+
+// 로그를 morgan으로 남길 때 홑따옴표(')안의 형식대로 로그를 남기도록 설정
+// 토큰: 메시지에 출력되는 특수한 문자열 = :remote-addr, :remote-user, [:date[Asia/Seoul]], :method, :url, :http-version, :status, :res[content-length], :referrer, :user-agent
+app.use(
+    morgan(
+        ':remote-addr - :remote-user [:date[Asia/Seoul]] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent"',
+        { stream: accessLogStream }
+    )
+);
 
 app.use('/auth', authRoutes);
 app.use('/users', userRoutes);

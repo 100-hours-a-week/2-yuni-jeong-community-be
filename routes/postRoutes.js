@@ -6,16 +6,16 @@ const router = express.Router();
 
 router.get('/:post_id/comments', getCommentsByPostId);
 router.get('/page/:page', getAllPosts);
-router.get('/:postId', getPostById);
+router.get('/:post_id', getPostById);
 
 router.post('/:post_id/comments', createComment);
 router.post('/', upload.single('image'), createPost);
 
-router.patch('/:postId/comments/:commentId', updateComment);
-router.patch('/:postId', upload.single('image'), updatePost);
+router.patch('/:post_id/comments/:comment_id', updateComment);
+router.patch('/:post_id', upload.single('image'), updatePost);
 
 router.delete('/:post_id/comments/:comment_id', deleteComment); 
-router.delete('/:postId', deletePost);
+router.delete('/:post_id', deletePost);
 
 
 export default router;

@@ -205,12 +205,12 @@ export const deleteUserAccount = (req, res) => {
                 const comments = JSON.parse(data);
                 const filteredComments = {};
 
-                Object.keys(comments).forEach(postId => {
-                    const postComments = comments[postId];
+                Object.keys(comments).forEach(post_id => {
+                    const postComments = comments[post_id];
                     if (Array.isArray(postComments)) {
-                        filteredComments[postId] = postComments.filter(comment => comment.user_id !== userId);
+                        filteredComments[post_id] = postComments.filter(comment => comment.user_id !== userId);
                     } else {
-                        filteredComments[postId] = [];
+                        filteredComments[post_id] = [];
                     }
                 });
 

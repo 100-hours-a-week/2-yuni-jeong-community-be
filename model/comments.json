@@ -17,6 +17,24 @@
       "profile_image": "/uploads/profile_image-1732106117377-128651977.jpg",
       "content": "쌀국수!",
       "date": "2024-11-20T13:19:12.497Z"
+    },
+    {
+      "comment_id": "a4d87958-e2cf-459b-ab03-91454821893f",
+      "user_id": "742d17a3-8835-4ccd-a7f8-b8bc15d1d3f3",
+      "author": "와옹",
+      "profile_image": "/uploads/user-profile.jpg",
+      "content": "삼겹살 🤤",
+      "date": "2024-11-20T14:34:40.915Z"
+    }
+  ],
+  "38c536eb-64d5-4707-a88c-c1b4d602d841": [
+    {
+      "comment_id": "ff086ab0-1039-4d63-ab17-cb98ea6d7971",
+      "user_id": "95cabfb6-4d11-4e29-be70-574b9b5c8d5e",
+      "author": "혜윤입니다",
+      "profile_image": "/uploads/profile_image-1732105771651-377831385.jpg",
+      "content": "추웠겠다",
+      "date": "2024-11-20T14:31:38.452Z"
     }
   ]
 }

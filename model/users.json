@@ -2,9 +2,9 @@
   {
     "user_id": 1,
     "email": "hyoon1129@naver.com",
-    "password": "$2b$10$.gnvHEX9rcsThpJMn0/JqO9LzE4pX24gAbBl.xkluTA6NOy4suMU2",
-    "nickname": "혜윤",
-    "profile_image": "/uploads/profile_image-1732020465936-19908659.png"
+    "password": "$2b$10$WmNGrxeV5vzjGWAJgSFuJO3E1QwPPlGNJJX4bPVbrxuwp7aJ6cvly",
+    "nickname": "혜윤윤",
+    "profile_image": "/uploads/profile_image-1732064224167-483868161.jpg"
   },
   {
     "user_id": 2,
@@ -18,6 +18,13 @@
     "email": "hyeyoon1129@naver.com",
     "password": "$2b$10$bo/loe7NxaAZh.Jx6MGTU.I92mYNoh208Qjb6z7SSCe.rxGENmtO.",
     "nickname": "유니",
+    "profile_image": "/uploads/user-profile.jpg"
+  },
+  {
+    "user_id": 4,
+    "email": "abc@naver.com",
+    "password": "$2b$10$MATN62AGsZejVPzRBie92udKyXSqRYgCN4xxMQhon0ZwCe0tUcWSW",
+    "nickname": "유유융",
     "profile_image": "/uploads/user-profile.jpg"
   }
 ]

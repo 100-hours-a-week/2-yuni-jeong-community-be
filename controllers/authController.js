@@ -1,14 +1,8 @@
-import { fileURLToPath } from 'url';
 import { getUserById } from './userController.js';
-import path from 'path';
 import fs from 'fs';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const usersFilePath = path.join(__dirname, '../model/users.json');
+import { usersFilePath } from '../utils/filePath.js';
 
 export const getCurrentUser = (req, res) => {
     if (!req.session.user_id) {

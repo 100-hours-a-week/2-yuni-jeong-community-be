@@ -1,1 +1,23 @@
-[{"user_id":"f7c39971-cd38-4947-8c40-6922421020be","email":"hyeyoon@naver.com","password":"$2b$10$xMvmNM9gDZXVp8OdVIjb8uSkdDbbpaJMiDtcccRQmDU62Hp2.UfFW","nickname":"핑구","profile_image":"/uploads/profile_image-1732106117377-128651977.jpg"},{"user_id":"742d17a3-8835-4ccd-a7f8-b8bc15d1d3f3","email":"hyeyoon1129@naver.com","password":"$2b$10$FoSYzujhGn3952LFWXfsieJqD6VWJ9/yuLo9HQzzJEt3uVQx4.e8C","nickname":"와옹","profile_image":"/uploads/user-profile.jpg"},{"user_id":"46acec61-0a00-4af8-a8c6-8a7c0d0124df","email":"hyoon1129@naver.com","password":"$2b$10$8HBiphoiNXB3wz8udCjoMOwGR55b3oWJ3PVnAg77kSGs1dm.43Be2","nickname":"혜윤","profile_image":"/uploads/profile_image-1732153257974-134293734.jpg"}]
+[
+  {
+    "user_id": "f7c39971-cd38-4947-8c40-6922421020be",
+    "email": "hyeyoon@naver.com",
+    "password": "$2b$10$xMvmNM9gDZXVp8OdVIjb8uSkdDbbpaJMiDtcccRQmDU62Hp2.UfFW",
+    "nickname": "핑구",
+    "profile_image": "/uploads/profile_image-1732106117377-128651977.jpg"
+  },
+  {
+    "user_id": "742d17a3-8835-4ccd-a7f8-b8bc15d1d3f3",
+    "email": "hyeyoon1129@naver.com",
+    "password": "$2b$10$FoSYzujhGn3952LFWXfsieJqD6VWJ9/yuLo9HQzzJEt3uVQx4.e8C",
+    "nickname": "와옹",
+    "profile_image": "/uploads/user-profile.jpg"
+  },
+  {
+    "user_id": "46acec61-0a00-4af8-a8c6-8a7c0d0124df",
+    "email": "hyoon1129@naver.com",
+    "password": "$2b$10$8HBiphoiNXB3wz8udCjoMOwGR55b3oWJ3PVnAg77kSGs1dm.43Be2",
+    "nickname": "혜윤",
+    "profile_image": "/uploads/profile_image-1732153257974-134293734.jpg"
+  }
+]

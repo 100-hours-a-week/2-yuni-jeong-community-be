@@ -1,19 +1,12 @@
-import { fileURLToPath } from 'url';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
 import { deleteFile, getUploadFilePath } from '../utils/fileUtils.js';
 import bcrypt from 'bcrypt';
+import { usersFilePath, postsFilePath, commentsFilePath } from '../utils/filePath.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const usersFilePath = path.join(__dirname, '../model/users.json');
-const postsFilePath = path.join(__dirname, '../model/posts.json');
-const commentsFilePath = path.join(__dirname, '../model/comments.json');
 
 // id로 회원 찾기
 export const getUserById = (userId) => {
-    const usersFilePath = path.join(__dirname, '../model/users.json');
     const users = JSON.parse(fs.readFileSync(usersFilePath, 'utf-8'));
     return users.find(user => user.user_id === userId);
 };

@@ -52,12 +52,12 @@
     "content": "배고파요",
     "image_url": "",
     "likes": 2,
-    "views": 6,
+    "views": 7,
     "comments_count": 2,
     "date": "2024-11-21T01:42:35.389Z",
     "like_users": [
-      "f7c39971-cd38-4947-8c40-6922421020be",
-      "742d17a3-8835-4ccd-a7f8-b8bc15d1d3f3"
+      "742d17a3-8835-4ccd-a7f8-b8bc15d1d3f3",
+      "f7c39971-cd38-4947-8c40-6922421020be"
     ]
   },
   {
@@ -67,11 +67,22 @@
     "content": "저는 과제 중 ㅠ",
     "image_url": "/uploads/image-1732153468143-461441688.jpeg",
     "likes": 1,
-    "views": 3,
-    "comments_count": 1,
+    "views": 7,
+    "comments_count": 2,
     "date": "2024-11-21T01:44:28.146Z",
     "like_users": [
       "f7c39971-cd38-4947-8c40-6922421020be"
     ]
+  },
+  {
+    "post_id": "0532b2e8-73ef-4a74-a997-708bc1eb17f6",
+    "user_id": "46acec61-0a00-4af8-a8c6-8a7c0d0124df",
+    "title": "a",
+    "content": "a",
+    "image_url": "",
+    "likes": 0,
+    "views": 1,
+    "comments_count": 0,
+    "date": "2024-11-21T04:27:27.927Z"
   }
 ]

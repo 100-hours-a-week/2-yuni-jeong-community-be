@@ -1,16 +1,9 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { getUserById } from './userController.js';
 import { deleteFile, getUploadFilePath } from '../utils/fileUtils.js';
 import { v4 as uuidv4 } from 'uuid';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const postsFilePath = path.join(__dirname, '../model/posts.json');
-const commentsFilePath = path.join(__dirname, '../model/comments.json');
-
+import { postsFilePath, commentsFilePath } from '../utils/filePath.js';
 
 /* -------------------------- 게시글 API -------------------------- */
 

@@ -4,83 +4,81 @@ import { getUserById } from './userController.js';
 import { deleteFile, getUploadFilePath } from '../utils/fileUtils.js';
 import { v4 as uuidv4 } from 'uuid';
 import { postsFilePath, commentsFilePath } from '../utils/filePath.js';
+import db from '../utils/db.js';
 
 /* -------------------------- 게시글 API -------------------------- */
 
 // 모든 게시글 조회
-export const getAllPosts = (req, res) => {
-    const page = parseInt(req.params.page,) || 1; // 요청된 페이지 번호
+export const getAllPosts = async (req, res) => {
+    const page = parseInt(req.params.page,) || 1;
     const limit = 10;
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
+    const offset = (page - 1) * limit;
 
+    try {
+        const [posts] = await db.query(
+            `
+            SELECT p.post_id, p.title, p.content, p.image_url, p.likes, p.views, p.comments_count, p.created_at,
+                   u.nickname AS author, u.profile_image
+            FROM posts p
+            LEFT JOIN users u ON p.user_id = u.user_id
+            ORDER BY p.created_at DESC
+            LIMIT ? OFFSET ?
+            `,
+            [limit, offset]
+        );
 
-    fs.readFile(postsFilePath, 'utf8', (err, data) => {
-        if (err) {
-            return res.status(500).json({ message: "서버 에러", data: null });
-        }
-
-        const posts = JSON.parse(data);
-        const paginatedPosts = posts.slice(startIndex, endIndex).map(post => {
-            const author = getUserById(post.user_id);
-            return {
-                ...post,
-                author: author ? author.nickname : "알 수 없음",
-                profile_image: author?.profile_image || '/uploads/user-profile.jpg',
-            };
-        });
-
-        res.status(200).json({ message: "게시글 목록 조회 성공", data: paginatedPosts });
-    });
-
+        res.status(200).json({ message: "게시글 목록 조회 성공", data: posts });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "서버 에러", data: null });
+    }
 };
 
 // 게시글 상세 조회
-export const getPostById = (req, res) => {
+export const getPostById = async (req, res) => {
     const post_id = req.params.post_id;
     const user_id = req.session.user_id;
 
-    fs.readFile(postsFilePath, 'utf8', (err, data) => {
-        if (err) {
-            return res.status(500).json({ message: "서버 에러", data: null });
-        }
-
-        const posts = JSON.parse(data);
-        const post = posts.find(p => p.post_id === post_id);
-
+    try {
+        const [[post]] = await db.query(
+            `
+            SELECT p.post_id, p.title, p.content, p.image_url, p.likes, p.views, p.comments_count, p.created_at,
+                   u.nickname AS author, u.profile_image, p.user_id
+            FROM posts p
+            LEFT JOIN users u ON p.user_id = u.user_id
+            WHERE p.post_id = ?
+            `,
+            [post_id]
+        );
         if (!post) {
             return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
         }
 
-        const author = getUserById(post.user_id);
-        const isAuthor = post.user_id === user_id;
+        // 좋아요 여부 확인
+        const [likeCheck] = await db.query(
+            'SELECT 1 FROM likes WHERE post_id = ? AND user_id = ?',
+            [post_id, user_id]
+        );
 
-        const isLiked = post.like_users ? post.like_users.includes(user_id) : false;
+        // 조회수 증가
+        await db.query('UPDATE posts SET views = views + 1 WHERE post_id = ?', [post_id]);
 
-
-        post.views += 1;
-
-        fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (writeErr) => {
-            if (writeErr) {
-                return res.status(500).json({ message: "조회수 업데이트 실패", data: null });
-            }
-
-            const postWithAuthor = {
+        res.status(200).json({
+            message: "게시글 조회 성공",
+            data: {
                 ...post,
-                author: author ? author.nickname : "알 수 없음",
-                profile_image: author?.profile_image || '/uploads/user-profile.jpg',
-                image_url: post.image_url || '',
-                isAuthor,
-                isLiked
-            };
-
-            res.status(200).json({ message: "게시글 조회 성공", data: postWithAuthor });
+                isAuthor: post.user_id === user_id,
+                isLiked: likeCheck.length > 0
+            }
         });
-    });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "서버 에러", data: null });
+    }
 };
 
 // 게시글 등록
-export const createPost = (req, res) => {
+export const createPost = async (req, res) => {
     const { title, content } = req.body;
     const user_id = req.session.user_id;
 
@@ -88,70 +86,59 @@ export const createPost = (req, res) => {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }
 
-    fs.readFile(postsFilePath, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+    try {
+        const post_id = uuidv4();
+        const image_url = req.file ? `/uploads/${req.file.filename}` : '';
+        const currentDateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-        const posts = JSON.parse(data);
-        const newPost = {
-            post_id: uuidv4(),
-            user_id,
-            title,
-            content,
-            image_url: req.file ? `/uploads/${req.file.filename}` : '',
-            likes: 0,
-            views: 0,
-            comments_count: 0,
-            date: new Date().toISOString()
-        };
+        await db.query(
+            `
+            INSERT INTO posts (post_id, user_id, title, content, image_url, likes, views, comments_count, created_at)
+            VALUES (?, ?, ?, ?, ?, 0, 0, 0, ?)
+            `,
+            [post_id, user_id, title, content, image_url, currentDateTime]
+        );
 
-        posts.push(newPost);
-
-        fs.writeFile(postsFilePath, JSON.stringify(posts), 'utf8', (writeErr) => {
-            if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
-            res.status(201).json({ message: "게시글 작성 완료", data: { post_id: newPost.post_id } });
-        });
-    });
+        res.status(201).json({ message: "게시글 작성 완료", data: { post_id } });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "서버 에러", data: null });
+    }
 };
 
 // 게시글 삭제
-export const deletePost = (req, res) => {
+export const deletePost = async (req, res) => {
     const post_id = req.params.post_id;
     const user_id = req.session.user_id;
 
-    fs.readFile(postsFilePath, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ message: "서버 에러", data: null });
-
-        const posts = JSON.parse(data);
-        const postIndex = posts.findIndex(post => post.post_id === post_id);
-
-        if (postIndex === -1) {
+    try {
+        const [[post]] = await db.query('SELECT * FROM posts WHERE post_id = ?', [post_id]);
+        if (!post) {
             return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
         }
-        
+
         // 작성자와 삭제하려는 user_id가 같은지 확인
-        if (posts[postIndex].user_id !== user_id) {
+        if (post.user_id !== user_id) {
             return res.status(403).json({ message: "권한이 없습니다.", data: null });
         }
 
-        const post = posts[postIndex];
-        const oldImage = post.image_url;
-
-        if (oldImage) {
-            const oldImagePath = getUploadFilePath(path.basename(post.image_url));
-            deleteFile(oldImagePath); 
+        // 이미지 삭제
+        if (post.image_url) {
+            const oldImagePath = getUploadFilePath(post.image_url);
+            deleteFile(oldImagePath);
         }
 
-        posts.splice(postIndex, 1);
-
-        fs.writeFile(postsFilePath, JSON.stringify(posts), 'utf8', (writeErr) => {
-            if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
-            res.status(200).json({ message: "게시글 삭제 완료", data: null });
-        });
-    });
+        // 게시글 삭제
+        await db.query('DELETE FROM posts WHERE post_id = ?', [post_id]);
+        res.status(200).json({ message: "게시글 삭제 완료", data: null });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "서버 에러", data: null });
+    }
 };
 
 // 게시글 수정
-export const updatePost = (req, res) => {
+export const updatePost = async (req, res) => {
     const post_id = req.params.post_id;
     const { title, content } = req.body;
     const user_id = req.session.user_id;
@@ -160,55 +147,47 @@ export const updatePost = (req, res) => {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }
 
-    fs.readFile(postsFilePath, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ message: "서버 에러", data: null });
-
-        try {
-            const posts = JSON.parse(data);
-            const postIndex = posts.findIndex(post => post.post_id === post_id);
-
-            if (postIndex === -1) {
-                return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
-            }
-
-            if (posts[postIndex].user_id !== user_id) {
-                return res.status(403).json({ message: "권한이 없습니다.", data: null });
-            }
-
-            // 기존 이미지 삭제
-            const post = posts[postIndex];
-            const oldImage = post.image_url;
-
-            if (req.file) {
-                const oldImagePath = getUploadFilePath(path.basename(oldImage));
-                deleteFile(oldImagePath); // 기존 이미지 삭제
-                post.image_url = `/uploads/${req.file.filename}`;
-            }
-
-            // 기존 게시글 업데이트
-            posts[postIndex] = { 
-                ...posts[postIndex], 
-                title, 
-                content, 
-                image_url: post.image_url,
-            };
-
-            fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (writeErr) => {
-                if (writeErr) return res.status(500).json({ message: "파일 쓰기 에러", data: null });
-                res.status(200).json({ message: "수정 완료", data: posts[postIndex] });
-            });
-        } catch (parseErr) {
-            console.error("JSON 파싱 오류:", parseErr);
-            return res.status(500).json({ message: "데이터 파싱 중 오류 발생", data: null });
+    try {
+        const [[post]] = await db.query('SELECT * FROM posts WHERE post_id = ?', [post_id]);
+        if (!post) {
+            return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
         }
-    });
+
+        if (post.user_id !== user_id) {
+            return res.status(403).json({ message: "권한이 없습니다.", data: null });
+        }
+
+        // 이미지 업데이트
+        if (req.file) {
+            if (post.image_url) {
+                const oldImagePath = getUploadFilePath(post.image_url);
+                deleteFile(oldImagePath);
+            }
+            post.image_url = `/uploads/${req.file.filename}`;
+        }
+
+        // 게시글 업데이트
+        await db.query(
+            `
+            UPDATE posts
+            SET title = ?, content = ?, image_url = ?
+            WHERE post_id = ?
+            `,
+            [title, content, post.image_url, post_id]
+        );
+
+        res.status(200).json({ message: "수정 완료", data: post });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "서버 에러", data: null });
+    }
 };
 
 
 /* -------------------------- 댓글 API -------------------------- */
 
 // 댓글 작성
-export const createComment = (req, res) => {
+export const createComment = async (req, res) => {
     const post_id = req.params.post_id;
     const { content } = req.body;
     const user_id = req.session.user_id;
@@ -217,93 +196,57 @@ export const createComment = (req, res) => {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }
 
-    const author = getUserById(user_id);
-    if (!author) {
-        return res.status(404).json({ message: "사용자를 찾을 수 없습니다.", data: null });
+    try {
+        const comment_id = uuidv4();
+        const currentDateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+        await db.query(
+            `
+            INSERT INTO comments (comment_id, post_id, user_id, content, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            `,
+            [comment_id, post_id, user_id, content, currentDateTime]
+        );
+
+        await db.query(
+            'UPDATE posts SET comments_count = comments_count + 1 WHERE post_id = ?',
+            [post_id]
+        );
+
+        res.status(201).json({ message: "댓글 작성 완료", data: { comment_id } });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "서버 에러", data: null });
     }
-
-    fs.readFile(commentsFilePath, 'utf8', (err, data) => {
-        if (err) {
-            console.error('댓글 데이터 읽기 실패:', err);
-            return res.status(500).json({ message: '서버 에러', data: null });
-        }
-
-        const commentsData = JSON.parse(data);
-        
-        if (!commentsData[post_id]) {
-            commentsData[post_id] = [];
-        }
-
-
-        const newComment = {
-            comment_id: uuidv4(),
-            user_id,
-            author: author.nickname,
-            profile_image: author.profile_image,
-            content,
-            date: new Date().toISOString(),
-        };
-
-        commentsData[post_id].push(newComment);
-
-        fs.writeFile(commentsFilePath, JSON.stringify(commentsData, null, 2), 'utf8', (writeErr) => {
-            if (writeErr) {
-                return res.status(500).json({ message: '서버 에러', data: null });
-            }
-
-            fs.readFile(postsFilePath, 'utf8', (postErr, postData) => {
-                if (postErr) {
-                    console.error("게시글 읽기 실패");
-                    return res.status(500).json({ message: '서버 에러', data: null });
-                }
-
-                const postsData = JSON.parse(postData);
-                const post = postsData.find((p) => p.post_id === post_id);
-
-                if (post) {
-                    post.comments_count += 1;
-                    fs.writeFile(postsFilePath, JSON.stringify(postsData, null, 2), 'utf8', (updateErr) => {
-                        if (updateErr) {
-                            console.error('댓글 수 업데이트 실패:', updateErr);
-                            return res.status(500).json({ message: '서버 에러', data: null });
-                        }
-                    });
-                }
-
-                res.status(201).json({ message: '댓글 작성 완료', data: newComment });
-            });
-        });
-    });
 };
 
 // 댓글 조회
-export const getCommentsByPostId = (req, res) => {
+export const getCommentsByPostId = async (req, res) => {
     const post_id = req.params.post_id;
     const user_id = req.session.user_id;
 
+    try {
+        const [comments] = await db.query(
+            `
+            SELECT c.comment_id, c.content, c.created_at, u.nickname AS author, u.profile_image,
+                   CASE WHEN c.user_id = ? THEN true ELSE false END AS isAuthor
+            FROM comments c
+            LEFT JOIN users u ON c.user_id = u.user_id
+            WHERE c.post_id = ?
+            ORDER BY c.created_at ASC
+            `,
+            [user_id, post_id]
+        );
 
-    fs.readFile(commentsFilePath, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ message: "서버 에러", data: null });
-            
-        const commentsData = JSON.parse(data);
-        const comments = commentsData[post_id] || [];
-
-        const commentsWithDetails = comments.map(comment => {
-            const author = getUserById(comment.user_id);
-            return {
-                ...comment,
-                author: author ? author.nickname : "알 수 없음",
-                profile_image: author ? author.profile_image : null,
-                isAuthor: comment.user_id === user_id,
-            };
-        });
-        
-        return res.status(200).json({ message: "댓글 조회 성공", data: commentsWithDetails });
-    });
+        res.status(200).json({ message: "댓글 조회 성공", data: comments });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "서버 에러", data: null });
+    }
 };
 
 // 댓글 수정 API
-export const updateComment = (req, res) => {
+export const updateComment = async (req, res) => {
     const post_id = req.params.post_id;
     const comment_id = req.params.comment_id;
     const { content } = req.body;
@@ -313,92 +256,110 @@ export const updateComment = (req, res) => {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }
 
-    fs.readFile(commentsFilePath, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+    try {
+        const [result] = await db.query(
+            `
+            UPDATE comments
+            SET content = ?
+            WHERE comment_id = ? AND post_id = ? AND user_id = ?
+            `,
+            [content, comment_id, post_id, user_id]
+        );
 
-        const commentsData = JSON.parse(data);
-        const commentsForPost = commentsData[post_id];
-
-        if (!commentsForPost) {
-            return res.status(404).json({ message: '댓글을 찾을 수 없습니다.', data: null });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "댓글을 찾을 수 없거나 권한이 없습니다.", data: null });
         }
 
-        const comment = commentsForPost.find((c) => c.comment_id === comment_id);
-        if (!comment || comment.user_id !== user_id) {
-            return res.status(403).json({ message: '권한이 없거나 댓글이 없습니다.', data: null });
-        }
-
-        comment.content = content;
-
-        fs.writeFile(commentsFilePath, JSON.stringify(commentsData, null, 2), 'utf8', (writeErr) => {
-            if (writeErr) {
-                console.error('댓글 데이터 쓰기 실패:', writeErr);
-                return res.status(500).json({ message: '서버 에러', data: null });
-            }
-
-            res.status(200).json({ message: '댓글 수정 완료', data: comment });
-        });
-    });
+        res.status(200).json({ message: "댓글 수정 완료", data: null });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "서버 에러", data: null });
+    }
 };
 
 // 댓글 삭제
-export const deleteComment = (req, res) => {
+export const deleteComment = async (req, res) => {
     const post_id = req.params.post_id;
     const comment_id = req.params.comment_id;
     const user_id = req.session.user_id;
 
-    fs.readFile(commentsFilePath, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({ message: "서버 에러", data: null });
+    try {
+        const [result] = await db.query(
+            `
+            DELETE FROM comments
+            WHERE comment_id = ? AND post_id = ? AND user_id = ?
+            `,
+            [comment_id, post_id, user_id]
+        );
 
-        const commentsData = JSON.parse(data);
-
-        // post_id 게시글에 해당하는 댓글들 찾기
-        const postComments = commentsData[post_id];
-        if (!postComments) {
-            return res.status(404).json({ message: "댓글을 찾을 수 없습니다.", data: null });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "댓글을 찾을 수 없거나 권한이 없습니다.", data: null });
         }
 
-        // commentId로 특정 댓글 인덱스 찾기
-        const commentIndex = postComments.findIndex(comment => comment.comment_id === comment_id);
-        if (commentIndex === -1) {
-            return res.status(404).json({ message: "해당 댓글이 없습니다.", data: null });
-        }
+        await db.query(
+            'UPDATE posts SET comments_count = comments_count - 1 WHERE post_id = ?',
+            [post_id]
+        );
 
-        if (postComments[commentIndex].user_id !== user_id) {
-            return res.status(403).json({ message: "권한이 없습니다.", data: null });
-        }
-
-        // 댓글 삭제
-        postComments.splice(commentIndex, 1);
-
-        // 변경된 댓글 데이터를 파일에 저장
-        fs.writeFile(commentsFilePath, JSON.stringify(commentsData), 'utf8', (writeErr) => {
-            if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
-            fs.readFile(postsFilePath, 'utf8', (postErr, postData) => {
-                if (postErr) return res.status(500).json({ message: "서버 에러", data: null });
-
-                const posts = JSON.parse(postData);
-                const postIndex = posts.findIndex(p => p.post_id === post_id);
-
-                if (postIndex !== -1) {
-                    posts[postIndex].comments_count -= 1;
-
-                    fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (updateErr) => {
-                        if (updateErr) return res.status(500).json({ message: "댓글 수 업데이트 실패", data: null });
-
-                        res.status(200).json({ message: "댓글 삭제 완료", data: null });
-                    });
-                } else {
-                    res.status(404).json({ message: "게시글을 찾을 수 없습니다.", data: null });
-                }
-            });
-        });
-    });
+        res.status(200).json({ message: "댓글 삭제 완료", data: null });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "서버 에러", data: null });
+    }
 };
 
+//     fs.readFile(commentsFilePath, 'utf8', (err, data) => {
+//         if (err) return res.status(500).json({ message: "서버 에러", data: null });
 
-/* -------------------------- 좋아요 API -------------------------- */
-export const toggleLike = (req, res) => {
+//         const commentsData = JSON.parse(data);
+
+//         // post_id 게시글에 해당하는 댓글들 찾기
+//         const postComments = commentsData[post_id];
+//         if (!postComments) {
+//             return res.status(404).json({ message: "댓글을 찾을 수 없습니다.", data: null });
+//         }
+
+//         // commentId로 특정 댓글 인덱스 찾기
+//         const commentIndex = postComments.findIndex(comment => comment.comment_id === comment_id);
+//         if (commentIndex === -1) {
+//             return res.status(404).json({ message: "해당 댓글이 없습니다.", data: null });
+//         }
+
+//         if (postComments[commentIndex].user_id !== user_id) {
+//             return res.status(403).json({ message: "권한이 없습니다.", data: null });
+//         }
+
+//         // 댓글 삭제
+//         postComments.splice(commentIndex, 1);
+
+//         // 변경된 댓글 데이터를 파일에 저장
+//         fs.writeFile(commentsFilePath, JSON.stringify(commentsData), 'utf8', (writeErr) => {
+//             if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
+//             fs.readFile(postsFilePath, 'utf8', (postErr, postData) => {
+//                 if (postErr) return res.status(500).json({ message: "서버 에러", data: null });
+
+//                 const posts = JSON.parse(postData);
+//                 const postIndex = posts.findIndex(p => p.post_id === post_id);
+
+//                 if (postIndex !== -1) {
+//                     posts[postIndex].comments_count -= 1;
+
+//                     fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (updateErr) => {
+//                         if (updateErr) return res.status(500).json({ message: "댓글 수 업데이트 실패", data: null });
+
+//                         res.status(200).json({ message: "댓글 삭제 완료", data: null });
+//                     });
+//                 } else {
+//                     res.status(404).json({ message: "게시글을 찾을 수 없습니다.", data: null });
+//                 }
+//             });
+//         });
+//     });
+// };
+
+
+// /* -------------------------- 좋아요 API -------------------------- */
+export const toggleLike = async (req, res) => {
     const post_id  = req.params.post_id;
     const user_id = req.session.user_id;
 
@@ -406,40 +367,33 @@ export const toggleLike = (req, res) => {
         return res.status(401).json({message: "로그인이 필요합니다.", data: null}); 
     }
 
-    fs.readFile(postsFilePath, 'utf8', (err, data) => {
-        if (err) return res.status(500).json({message: "서버 에러", data: null});
-
-        const posts = JSON.parse(data);
-        const post = posts.find((p) => p.post_id === post_id);
-
-        if (!post) {
-            return res.status(404).json({message: "게시글을 찾을 수 없습니다. ", data: null});
-        }
-
-        if (!post.like_users) {
-            post.like_users = [];
-        }
+    try {
+        const [likeCheck] = await db.query(
+            'SELECT * FROM likes WHERE post_id = ? AND user_id = ?',
+            [post_id, user_id]
+        );
 
         let isLiked = false;
-
-        if (post.like_users.includes(user_id)) {
-            post.like_users = post.like_users.filter((id) => id !== user_id);
-            post.likes -= 1;
+        if (likeCheck.length > 0) {
+            await db.query('DELETE FROM likes WHERE post_id = ? AND user_id = ?', [post_id, user_id]);
+            await db.query('UPDATE posts SET likes = likes - 1 WHERE post_id = ?', [post_id]);
         } else {
-            post.like_users.push(user_id);
-            post.likes += 1;
+            await db.query('INSERT INTO likes (post_id, user_id) VALUES (?, ?)', [post_id, user_id]);
+            await db.query('UPDATE posts SET likes = likes + 1 WHERE post_id = ?', [post_id]);
             isLiked = true;
         }
 
-        fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (writeErr)=> {
-            if (writeErr) return res.status(500).json({message: "서버 에러", data: null});
-            res.status(200).json({
-                message: "좋아요 상태 변경 성공",
-                data: {
-                    likes: post.likes,
-                    isLiked
-                }
-            });
-        })
-    })
-}
+        const [[{ likes }]] = await db.query(
+            'SELECT likes FROM posts WHERE post_id = ?',
+            [post_id]
+        );
+
+        res.status(200).json({
+            message: "좋아요 상태 변경 성공",
+            data: { likes, isLiked },
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "서버 에러", data: null });
+    }
+};

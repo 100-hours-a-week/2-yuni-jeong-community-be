@@ -1,8 +1,6 @@
 import { getUserById } from './userController.js';
-// import fs from 'fs';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-// import { usersFilePath } from '../utils/filePath.js';
 import db from '../utils/db.js';
 
 export const getCurrentUser = async (req, res) => {

@@ -308,56 +308,6 @@ export const deleteComment = async (req, res) => {
     }
 };
 
-//     fs.readFile(commentsFilePath, 'utf8', (err, data) => {
-//         if (err) return res.status(500).json({ message: "서버 에러", data: null });
-
-//         const commentsData = JSON.parse(data);
-
-//         // post_id 게시글에 해당하는 댓글들 찾기
-//         const postComments = commentsData[post_id];
-//         if (!postComments) {
-//             return res.status(404).json({ message: "댓글을 찾을 수 없습니다.", data: null });
-//         }
-
-//         // commentId로 특정 댓글 인덱스 찾기
-//         const commentIndex = postComments.findIndex(comment => comment.comment_id === comment_id);
-//         if (commentIndex === -1) {
-//             return res.status(404).json({ message: "해당 댓글이 없습니다.", data: null });
-//         }
-
-//         if (postComments[commentIndex].user_id !== user_id) {
-//             return res.status(403).json({ message: "권한이 없습니다.", data: null });
-//         }
-
-//         // 댓글 삭제
-//         postComments.splice(commentIndex, 1);
-
-//         // 변경된 댓글 데이터를 파일에 저장
-//         fs.writeFile(commentsFilePath, JSON.stringify(commentsData), 'utf8', (writeErr) => {
-//             if (writeErr) return res.status(500).json({ message: "서버 에러", data: null });
-//             fs.readFile(postsFilePath, 'utf8', (postErr, postData) => {
-//                 if (postErr) return res.status(500).json({ message: "서버 에러", data: null });
-
-//                 const posts = JSON.parse(postData);
-//                 const postIndex = posts.findIndex(p => p.post_id === post_id);
-
-//                 if (postIndex !== -1) {
-//                     posts[postIndex].comments_count -= 1;
-
-//                     fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (updateErr) => {
-//                         if (updateErr) return res.status(500).json({ message: "댓글 수 업데이트 실패", data: null });
-
-//                         res.status(200).json({ message: "댓글 삭제 완료", data: null });
-//                     });
-//                 } else {
-//                     res.status(404).json({ message: "게시글을 찾을 수 없습니다.", data: null });
-//                 }
-//             });
-//         });
-//     });
-// };
-
-
 // /* -------------------------- 좋아요 API -------------------------- */
 export const toggleLike = async (req, res) => {
     const post_id  = req.params.post_id;

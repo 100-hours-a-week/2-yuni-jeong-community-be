@@ -62,6 +62,9 @@ export const getPostById = (req, res) => {
         const author = getUserById(post.user_id);
         const isAuthor = post.user_id === user_id;
 
+        const isLiked = post.like_users ? post.like_users.includes(user_id) : false;
+
+
         post.views += 1;
 
         fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (writeErr) => {
@@ -75,6 +78,7 @@ export const getPostById = (req, res) => {
                 profile_image: author?.profile_image || '/uploads/user-profile.jpg',
                 image_url: post.image_url || '',
                 isAuthor,
+                isLiked
             };
 
             res.status(200).json({ message: "게시글 조회 성공", data: postWithAuthor });
@@ -398,3 +402,51 @@ export const deleteComment = (req, res) => {
         });
     });
 };
+
+
+/* -------------------------- 좋아요 API -------------------------- */
+export const toggleLike = (req, res) => {
+    const post_id  = req.params.post_id;
+    const user_id = req.session.user_id;
+
+    if (!user_id) {
+        return res.status(401).json({message: "로그인이 필요합니다.", data: null}); 
+    }
+
+    fs.readFile(postsFilePath, 'utf8', (err, data) => {
+        if (err) return res.status(500).json({message: "서버 에러", data: null});
+
+        const posts = JSON.parse(data);
+        const post = posts.find((p) => p.post_id === post_id);
+
+        if (!post) {
+            return res.status(404).json({message: "게시글을 찾을 수 없습니다. ", data: null});
+        }
+
+        if (!post.like_users) {
+            post.like_users = [];
+        }
+
+        let isLiked = false;
+
+        if (post.like_users.includes(user_id)) {
+            post.like_users = post.like_users.filter((id) => id !== user_id);
+            post.likes -= 1;
+        } else {
+            post.like_users.push(user_id);
+            post.likes += 1;
+            isLiked = true;
+        }
+
+        fs.writeFile(postsFilePath, JSON.stringify(posts, null, 2), 'utf8', (writeErr)=> {
+            if (writeErr) return res.status(500).json({message: "서버 에러", data: null});
+            res.status(200).json({
+                message: "좋아요 상태 변경 성공",
+                data: {
+                    likes: post.likes,
+                    isLiked
+                }
+            });
+        })
+    })
+}

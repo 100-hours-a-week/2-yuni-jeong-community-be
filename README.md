@@ -13,7 +13,7 @@ git clone https://github.com/100-hours-a-week/2-yuni-jeong-community-be.git
 **2. 루트 디렉토리에 .env 파일 만들고 환경변수 설정**
 ```env
 PORT=8080                     # 사용할 포트 번호
-SESSION_SECRET=secret-key   # 세션 시크릿 키
+SESSION_SECRET=secret-key     # 세션 시크릿 키
 
 // 디비 연결 정보 작성
 DB_HOST=localhost              # 데이터베이스 호스트

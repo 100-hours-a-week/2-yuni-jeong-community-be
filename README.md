@@ -3,6 +3,7 @@
 
 ## 🛠️ Stack
 ![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
+![AWS RDS](https://img.shields.io/badge/AWS_RDS-527FFF?style=for-the-badge&logo=amazon-aws&logoColor=white)
 
 ## 🎥 소개 영상
 [소개 영상 바로가기](https://drive.google.com/file/d/1MwC9VxA4xt1x53nneWBQRIIzJOQN6nAh/view?usp=sharing)

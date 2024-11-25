@@ -15,6 +15,8 @@ import {
     checkLikeStatus,
     togglePostLike,
 } from '../model/postModel.js';
+import * as commentModel from '../model/commentModel.js';
+
 /* -------------------------- 게시글 API -------------------------- */
 
 // 모든 게시글 조회
@@ -173,20 +175,9 @@ export const createComment = async (req, res) => {
 
     try {
         const comment_id = uuidv4();
-        const currentDateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-        await db.query(
-            `
-            INSERT INTO comments (comment_id, post_id, user_id, content, created_at)
-            VALUES (?, ?, ?, ?, ?)
-            `,
-            [comment_id, post_id, user_id, content, currentDateTime]
-        );
-
-        await db.query(
-            'UPDATE posts SET comments_count = comments_count + 1 WHERE post_id = ?',
-            [post_id]
-        );
+        await commentModel.createComment({comment_id, post_id, user_id, content, created_at});
 
         res.status(201).json({ message: "댓글 작성 완료", data: { comment_id } });
     } catch (error) {
@@ -201,18 +192,7 @@ export const getCommentsByPostId = async (req, res) => {
     const user_id = req.session.user_id;
 
     try {
-        const [comments] = await db.query(
-            `
-            SELECT c.comment_id, c.content, c.created_at, u.nickname AS author, u.profile_image,
-                   CASE WHEN c.user_id = ? THEN true ELSE false END AS isAuthor
-            FROM comments c
-            LEFT JOIN users u ON c.user_id = u.user_id
-            WHERE c.post_id = ?
-            ORDER BY c.created_at ASC
-            `,
-            [user_id, post_id]
-        );
-
+        const comments = await commentModel.getCommentsByPostId(post_id, user_id)
         res.status(200).json({ message: "댓글 조회 성공", data: comments });
     } catch (error) {
         console.error(error);
@@ -232,16 +212,8 @@ export const updateComment = async (req, res) => {
     }
 
     try {
-        const [result] = await db.query(
-            `
-            UPDATE comments
-            SET content = ?
-            WHERE comment_id = ? AND post_id = ? AND user_id = ?
-            `,
-            [content, comment_id, post_id, user_id]
-        );
-
-        if (result.affectedRows === 0) {
+        const result = await commentModel.updateComment({comment_id, post_id, user_id, content})
+        if (!result) {
             return res.status(404).json({ message: "댓글을 찾을 수 없거나 권한이 없습니다.", data: null });
         }
 
@@ -259,22 +231,12 @@ export const deleteComment = async (req, res) => {
     const user_id = req.session.user_id;
 
     try {
-        const [result] = await db.query(
-            `
-            DELETE FROM comments
-            WHERE comment_id = ? AND post_id = ? AND user_id = ?
-            `,
-            [comment_id, post_id, user_id]
-        );
+        const result = await commentModel.deleteComment({comment_id, post_id, user_id});
+        
 
-        if (result.affectedRows === 0) {
+        if (!result) {
             return res.status(404).json({ message: "댓글을 찾을 수 없거나 권한이 없습니다.", data: null });
         }
-
-        await db.query(
-            'UPDATE posts SET comments_count = comments_count - 1 WHERE post_id = ?',
-            [post_id]
-        );
 
         res.status(200).json({ message: "댓글 삭제 완료", data: null });
     } catch (error) {

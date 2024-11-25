@@ -1,16 +1,12 @@
-import fs from 'fs';
-import path from 'path';
 import { deleteFile, getUploadFilePath } from '../utils/fileUtils.js';
 import bcrypt from 'bcrypt';
-import { usersFilePath, postsFilePath, commentsFilePath } from '../utils/filePath.js';
 import db from '../utils/db.js';
-
+import * as userModel from '../model/userModel.js';
 
 // id로 회원 찾기
 export const getUserById = async (user_id) => {
     try {
-        const [userRows] = await db.query('SELECT * FROM users WHERE user_id = ?', [user_id]);
-        return userRows[0];
+        return await userModel.findUserById(user_id);
     } catch (error) {
         console.error('id로 회원 찾기 오류 :', error);
         throw error;
@@ -25,14 +21,13 @@ export const updateUserProfile = async (req, res) => {
 
     const { nickname } = req.body;
     const newProfileImage = req.file ? `/uploads/${req.file.filename}` : null;
+    
     if (!nickname) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }
 
     try {
-        const [userRows] = await db.query('SELECT * FROM users WHERE user_id = ?', [req.session.user_id]);
-        const user = userRows[0];
-
+        const user = await userModel.findUserById(req.session.user_id);
         if (!user) {
             return res.status(404).json({ message: "사용자를 찾을 수 없습니다.", data: null });
         }
@@ -44,10 +39,7 @@ export const updateUserProfile = async (req, res) => {
         }
 
         // 프로필 업데이트
-        await db.query(
-            'UPDATE users SET nickname = ?, profile_image = ? WHERE user_id = ?',
-            [nickname, newProfileImage || user.profile_image, req.session.user_id]
-        );
+        await userModel.updateUserProfile(req.session.user_id, nickname, newProfileImage || user.profile_image)
 
         res.status(200).json({
             message: "회원 정보 수정 성공",
@@ -76,7 +68,7 @@ export const updatePassword = async (req, res) => {
     }
 
     try {
-        const [[user]] = await db.query('SELECT password FROM users WHERE user_id = ?', [req.session.user_id]);
+        const user = await userModel.findUserById(req.session.user_id);
         if (!user) {
             return res.status(404).json({ message: "사용자를 찾을 수 없습니다.", data: null });
         }
@@ -87,7 +79,7 @@ export const updatePassword = async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(new_password, 10);
-        await db.query('UPDATE users SET password = ? WHERE user_id = ?', [hashedPassword, req.session.user_id]);
+        await userModel.updatePassword(req.session.user_id, hashedPassword);
 
         res.status(200).json({ message: "비밀번호 변경 성공", data: null });
     } catch (error) {
@@ -106,9 +98,7 @@ export const deleteUserAccount = async (req, res) => {
 
     try {
         // 사용자 데이터 조회
-        const [userRows] = await db.query('SELECT * FROM users WHERE user_id = ?', [user_id]);
-        const user = userRows[0];
-
+        const user = await userModel.findUserById(user_id);
         if (!user) {
             return res.status(404).json({ message: "사용자를 찾을 수 없습니다.", data: null });
         }
@@ -129,9 +119,7 @@ export const deleteUserAccount = async (req, res) => {
         });
 
         // 데이터 삭제
-        await db.query('DELETE FROM comments WHERE user_id = ?', [user_id]);
-        await db.query('DELETE FROM posts WHERE user_id = ?', [user_id]);
-        await db.query('DELETE FROM users WHERE user_id = ?', [user_id]);
+        await userModel.deleteUserAccount(user_id);
 
         req.session.destroy(err => {
             if (err) {
@@ -155,8 +143,8 @@ export const checkEmailAvailability =async (req, res) => {
     }
 
     try {
-        const [rows] = await db.query('SELECT user_id FROM users WHERE email = ?', [email]);
-        if (rows.length > 0) {
+        const user = await userModel.findUserByEmail(email);
+        if (user) {
             return res.status(409).json({ message: "중복된 이메일입니다.", data: null });
         }
         res.status(200).json({ message: "사용 가능한 이메일입니다.", data: null });
@@ -175,8 +163,8 @@ export const checkNicknameAvailability = async (req, res) => {
     }
 
     try {
-        const [rows] = await db.query('SELECT user_id FROM users WHERE nickname = ?', [nickname]);
-        if (rows.length > 0) {
+        const user = await userModel.findUserByNickname(nickname);
+        if (user) {
             return res.status(409).json({ message: "중복된 닉네임입니다.", data: null });
         }
         res.status(200).json({ message: "사용 가능한 닉네임입니다.", data: null });

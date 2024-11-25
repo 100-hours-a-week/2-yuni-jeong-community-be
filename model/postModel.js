@@ -29,14 +29,15 @@ export const getPostById = async (post_id) => {
     return post;
 };
 
-export const uploadPost = async ({ post_id, user_id, title, content, image_url, created_at }) => {
-    await db.query(
+export const uploadPost = async ({ user_id, title, content, image_url, created_at }) => {
+    const [result] = await db.query(
         `
-        INSERT INTO posts (post_id, user_id, title, content, image_url, likes, views, comments_count, created_at)
-        VALUES (?, ?, ?, ?, ?, 0, 0, 0, ?)
+        INSERT INTO posts (user_id, title, content, image_url, likes, views, comments_count, created_at)
+        VALUES (?, ?, ?, ?, 0, 0, 0, ?)
         `,
-        [post_id, user_id, title, content, image_url, created_at]
+        [user_id, title, content, image_url, created_at]
     );
+    return result.insertId;
 };
 
 export const deletePost = async (post_id) => {

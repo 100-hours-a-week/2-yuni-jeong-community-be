@@ -11,6 +11,7 @@ export const deleteFile = (filePath) => {
     });
 };
 
-export const getUploadFilePath = (filename) => {
-    return path.join(process.cwd(), 'uploads', filename);
+export const getUploadFilePath = (filePath) => {
+    const normalizedPath = filePath.replace(/^\/uploads\//, '');
+    return path.join(process.cwd(), 'uploads', normalizedPath);
 };

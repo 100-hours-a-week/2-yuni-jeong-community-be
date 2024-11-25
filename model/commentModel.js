@@ -1,18 +1,19 @@
 import db from '../utils/db.js';
 
-export const createComment = async ({comment_id, post_id, user_id, content, created_at}) => {
-    await db.query(
+export const createComment = async ({post_id, user_id, content, created_at}) => {
+    const [result] = await db.query(
         `
-        INSERT INTO comments (comment_id, post_id, user_id, content, created_at)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO comments (post_id, user_id, content, created_at)
+        VALUES (?, ?, ?, ?)
         `,
-        [comment_id, post_id, user_id, content, created_at]
+        [post_id, user_id, content, created_at]
     );
 
     await db.query(
         'UPDATE posts SET comments_count = comments_count + 1 WHERE post_id = ?',
         [post_id]
     );
+    return result.insertId;
 }
 
 export const getCommentsByPostId = async (post_id, user_id) => {

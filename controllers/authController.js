@@ -49,10 +49,9 @@ export const register = async (req, res) => {
         
         // 비밀번호 암호화
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user_id = uuidv4();
         const profile_image = req.file ? `/uploads/${req.file.filename}` : '/uploads/user-profile.jpg';
         
-        await userModel.createUser({user_id, email, hashedPassword, nickname, profile_image});
+        const user_id = await userModel.createUser({email, hashedPassword, nickname, profile_image});
 
         res.status(201).json({ message: "회원가입 성공", data: { user_id } });
 

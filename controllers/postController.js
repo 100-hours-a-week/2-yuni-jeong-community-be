@@ -62,11 +62,10 @@ export const uploadPost = async (req, res) => {
     }
 
     try {
-        const post_id = uuidv4();
         const image_url = req.file ? `/uploads/${req.file.filename}` : '';
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-        await postModel.uploadPost({ post_id, user_id, title, content, image_url, created_at });
+        const post_id = await postModel.uploadPost({ user_id, title, content, image_url, created_at });
     
         res.status(201).json({ message: "게시글 작성 완료", data: { post_id } });
     } catch (error) {
@@ -160,10 +159,9 @@ export const createComment = async (req, res) => {
     }
 
     try {
-        const comment_id = uuidv4();
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-        await commentModel.createComment({comment_id, post_id, user_id, content, created_at});
+        const comment_id = await commentModel.createComment({post_id, user_id, content, created_at});
 
         res.status(201).json({ message: "댓글 작성 완료", data: { comment_id } });
     } catch (error) {
@@ -242,9 +240,9 @@ export const toggleLike = async (req, res) => {
 
     try {
         const isLiked = await postModel.checkLikeStatus(post_id, user_id);
-        await togglePostLike(post_id, user_id, isLiked);
+        await postModel.togglePostLike(post_id, user_id, isLiked);
 
-        const post = await fetchPostById(post_id);
+        const post = await postModel.getPostById(post_id);
         res.status(200).json({
             message: "좋아요 상태 변경 성공",
             data: { likes: post.likes, isLiked: !isLiked  },

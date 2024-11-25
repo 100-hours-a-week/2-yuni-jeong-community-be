@@ -5,7 +5,16 @@ import { deleteFile, getUploadFilePath } from '../utils/fileUtils.js';
 import { v4 as uuidv4 } from 'uuid';
 import { postsFilePath, commentsFilePath } from '../utils/filePath.js';
 import db from '../utils/db.js';
-
+import {
+    fetchPosts,
+    fetchPostById,
+    createPost,
+    removePost,
+    updatePostById,
+    incrementPostViews,
+    checkLikeStatus,
+    togglePostLike,
+} from '../model/postModel.js';
 /* -------------------------- 게시글 API -------------------------- */
 
 // 모든 게시글 조회
@@ -15,18 +24,7 @@ export const getAllPosts = async (req, res) => {
     const offset = (page - 1) * limit;
 
     try {
-        const [posts] = await db.query(
-            `
-            SELECT p.post_id, p.title, p.content, p.image_url, p.likes, p.views, p.comments_count, p.created_at,
-                   u.nickname AS author, u.profile_image
-            FROM posts p
-            LEFT JOIN users u ON p.user_id = u.user_id
-            ORDER BY p.created_at DESC
-            LIMIT ? OFFSET ?
-            `,
-            [limit, offset]
-        );
-
+        const posts = await fetchPosts(limit, offset);
         res.status(200).json({ message: "게시글 목록 조회 성공", data: posts });
     } catch (error) {
         console.error(error);
@@ -40,35 +38,24 @@ export const getPostById = async (req, res) => {
     const user_id = req.session.user_id;
 
     try {
-        const [[post]] = await db.query(
-            `
-            SELECT p.post_id, p.title, p.content, p.image_url, p.likes, p.views, p.comments_count, p.created_at,
-                   u.nickname AS author, u.profile_image, p.user_id
-            FROM posts p
-            LEFT JOIN users u ON p.user_id = u.user_id
-            WHERE p.post_id = ?
-            `,
-            [post_id]
-        );
+        const post = await fetchPostById(post_id);
+
         if (!post) {
             return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
         }
 
         // 좋아요 여부 확인
-        const [likeCheck] = await db.query(
-            'SELECT 1 FROM likes WHERE post_id = ? AND user_id = ?',
-            [post_id, user_id]
-        );
-
+        const isLiked = await checkLikeStatus(post_id, user_id);
+        
         // 조회수 증가
-        await db.query('UPDATE posts SET views = views + 1 WHERE post_id = ?', [post_id]);
+        await incrementPostViews(post_id);
 
         res.status(200).json({
             message: "게시글 조회 성공",
             data: {
                 ...post,
                 isAuthor: post.user_id === user_id,
-                isLiked: likeCheck.length > 0
+                isLiked
             }
         });
     } catch (error) {
@@ -78,7 +65,7 @@ export const getPostById = async (req, res) => {
 };
 
 // 게시글 등록
-export const createPost = async (req, res) => {
+export const uploadPost = async (req, res) => {
     const { title, content } = req.body;
     const user_id = req.session.user_id;
 
@@ -89,16 +76,10 @@ export const createPost = async (req, res) => {
     try {
         const post_id = uuidv4();
         const image_url = req.file ? `/uploads/${req.file.filename}` : '';
-        const currentDateTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
-        await db.query(
-            `
-            INSERT INTO posts (post_id, user_id, title, content, image_url, likes, views, comments_count, created_at)
-            VALUES (?, ?, ?, ?, ?, 0, 0, 0, ?)
-            `,
-            [post_id, user_id, title, content, image_url, currentDateTime]
-        );
-
+        await createPost({ post_id, user_id, title, content, image_url, created_at });
+    
         res.status(201).json({ message: "게시글 작성 완료", data: { post_id } });
     } catch (error) {
         console.error(error);
@@ -112,7 +93,7 @@ export const deletePost = async (req, res) => {
     const user_id = req.session.user_id;
 
     try {
-        const [[post]] = await db.query('SELECT * FROM posts WHERE post_id = ?', [post_id]);
+        const post = await fetchPostById(post_id);
         if (!post) {
             return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
         }
@@ -129,7 +110,7 @@ export const deletePost = async (req, res) => {
         }
 
         // 게시글 삭제
-        await db.query('DELETE FROM posts WHERE post_id = ?', [post_id]);
+        await removePost(post_id);
         res.status(200).json({ message: "게시글 삭제 완료", data: null });
     } catch (error) {
         console.error(error);
@@ -148,7 +129,8 @@ export const updatePost = async (req, res) => {
     }
 
     try {
-        const [[post]] = await db.query('SELECT * FROM posts WHERE post_id = ?', [post_id]);
+        const post = await fetchPostById(post_id);
+        console.log(post)
         if (!post) {
             return res.status(404).json({ message: "찾을 수 없는 게시글입니다.", data: null });
         }
@@ -165,16 +147,9 @@ export const updatePost = async (req, res) => {
             }
             post.image_url = `/uploads/${req.file.filename}`;
         }
-
+        
         // 게시글 업데이트
-        await db.query(
-            `
-            UPDATE posts
-            SET title = ?, content = ?, image_url = ?
-            WHERE post_id = ?
-            `,
-            [title, content, post.image_url, post_id]
-        );
+        await updatePostById(post_id, title, content, post.image_url);
 
         res.status(200).json({ message: "수정 완료", data: post });
     } catch (error) {
@@ -318,29 +293,13 @@ export const toggleLike = async (req, res) => {
     }
 
     try {
-        const [likeCheck] = await db.query(
-            'SELECT * FROM likes WHERE post_id = ? AND user_id = ?',
-            [post_id, user_id]
-        );
+        const isLiked = await checkLikeStatus(post_id, user_id);
+        await togglePostLike(post_id, user_id, isLiked);
 
-        let isLiked = false;
-        if (likeCheck.length > 0) {
-            await db.query('DELETE FROM likes WHERE post_id = ? AND user_id = ?', [post_id, user_id]);
-            await db.query('UPDATE posts SET likes = likes - 1 WHERE post_id = ?', [post_id]);
-        } else {
-            await db.query('INSERT INTO likes (post_id, user_id) VALUES (?, ?)', [post_id, user_id]);
-            await db.query('UPDATE posts SET likes = likes + 1 WHERE post_id = ?', [post_id]);
-            isLiked = true;
-        }
-
-        const [[{ likes }]] = await db.query(
-            'SELECT likes FROM posts WHERE post_id = ?',
-            [post_id]
-        );
-
+        const post = await fetchPostById(post_id);
         res.status(200).json({
             message: "좋아요 상태 변경 성공",
-            data: { likes, isLiked },
+            data: { likes: post.likes, isLiked: !isLiked  },
         });
     } catch (error) {
         console.error(error);

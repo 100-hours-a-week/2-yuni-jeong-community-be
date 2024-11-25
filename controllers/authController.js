@@ -1,11 +1,6 @@
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import {
-    findUserByEmail,
-    findUserByNickname,
-    findUserById,
-    createUser,
-} from '../model/userModel.js';
+import * as userModel from '../model/userModel.js';
 
 export const getCurrentUser = async (req, res) => {
     if (!req.session.user_id) {
@@ -13,7 +8,7 @@ export const getCurrentUser = async (req, res) => {
     }
 
     try {
-        const user = await findUserById(req.session.user_id);
+        const user = await userModel.findUserById(req.session.user_id);
         if (!user) {
             return res.status(404).json({message: "사용자를 찾을 수 없습니다." , data: null});
         }
@@ -42,12 +37,12 @@ export const register = async (req, res) => {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }
     try {
-        const existingUserByEmail = await findUserByEmail(email);
+        const existingUserByEmail = await userModel.findUserByEmail(email);
         if (existingUserByEmail) {
             return res.status(409).json({ message: "이미 사용 중인 이메일입니다.", data: null }); 
         }
 
-        const existingUserByNickname = await findUserByNickname(nickname);
+        const existingUserByNickname = await userModel.findUserByNickname(nickname);
         if (existingUserByNickname) {
             return res.status(409).json({ message: "이미 사용 중인 닉네임입니다.", data: null });
         }
@@ -57,7 +52,7 @@ export const register = async (req, res) => {
         const user_id = uuidv4();
         const profile_image = req.file ? `/uploads/${req.file.filename}` : '/uploads/user-profile.jpg';
         
-        await createUser({user_id, email, hashedPassword, nickname, profile_image});
+        await userModel.createUser({user_id, email, hashedPassword, nickname, profile_image});
 
         res.status(201).json({ message: "회원가입 성공", data: { user_id } });
 
@@ -75,7 +70,7 @@ export const login = async (req, res) => {
     }
 
     try {
-        const user = await findUserByEmail(email);
+        const user = await userModel.findUserByEmail(email);
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) {
             return res.status(400).json({ message: "이메일 또는 비밀번호가 잘못되었습니다.", data: null });

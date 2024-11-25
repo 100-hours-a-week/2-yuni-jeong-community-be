@@ -1,6 +1,6 @@
 import db from '../utils/db.js';
 
-export const fetchPosts = async (limit, offset) => {
+export const getAllPosts = async (limit, offset) => {
     const [posts] = await db.query(
         `
         SELECT p.post_id, p.title, p.content, p.image_url, p.likes, p.views, p.comments_count, p.created_at,
@@ -15,7 +15,7 @@ export const fetchPosts = async (limit, offset) => {
     return posts;
 };
 
-export const fetchPostById = async (post_id) => {
+export const getPostById = async (post_id) => {
     const [[post]] = await db.query(
         `
         SELECT p.post_id, p.title, p.content, p.image_url, p.likes, p.views, p.comments_count, p.created_at,
@@ -29,7 +29,7 @@ export const fetchPostById = async (post_id) => {
     return post;
 };
 
-export const createPost = async ({ post_id, user_id, title, content, image_url, created_at }) => {
+export const uploadPost = async ({ post_id, user_id, title, content, image_url, created_at }) => {
     await db.query(
         `
         INSERT INTO posts (post_id, user_id, title, content, image_url, likes, views, comments_count, created_at)
@@ -39,11 +39,11 @@ export const createPost = async ({ post_id, user_id, title, content, image_url, 
     );
 };
 
-export const removePost = async (post_id) => {
+export const deletePost = async (post_id) => {
     await db.query('DELETE FROM posts WHERE post_id = ?', [post_id]);
 };
 
-export const updatePostById = async (post_id, title, content, image_url) => {
+export const updatePost = async (post_id, title, content, image_url) => {
     await db.query(
         `
         UPDATE posts

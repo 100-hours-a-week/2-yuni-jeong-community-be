@@ -241,7 +241,7 @@ export const toggleLike = async (req, res) => {
     }
 
     try {
-        const isLiked = await checkLikeStatus(post_id, user_id);
+        const isLiked = await postModel.checkLikeStatus(post_id, user_id);
         await togglePostLike(post_id, user_id, isLiked);
 
         const post = await fetchPostById(post_id);

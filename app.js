@@ -15,6 +15,7 @@ import moment from 'moment-timezone';
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 8080
 dotenv.config();
 
@@ -69,5 +70,5 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
 app.listen(PORT, () => {
-    console.log('http://localhost:8080 에서 서버 실행 중');
+    console.log(`http://${HOST}:${PORT} 에서 서버 실행 중`);
 });

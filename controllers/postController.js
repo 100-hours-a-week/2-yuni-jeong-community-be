@@ -1,5 +1,4 @@
 import { deleteFile, getUploadFilePath } from '../utils/fileUtils.js';
-import { v4 as uuidv4 } from 'uuid';
 import * as postModel from '../model/postModel.js';
 import * as commentModel from '../model/commentModel.js';
 

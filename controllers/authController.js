@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt';
-import { v4 as uuidv4 } from 'uuid';
 import * as userModel from '../model/userModel.js';
 
 export const getCurrentUser = async (req, res) => {

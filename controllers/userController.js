@@ -20,8 +20,14 @@ export const updateUserProfile = async (req, res) => {
     }
 
     const { nickname } = req.body;
-    const newProfileImage = req.file ? `/uploads/${req.file.filename}` : null;
-    
+
+    let newProfileImage;
+    if (req.body.profile_image === 'default') {
+        newProfileImage = '/uploads/user-profile.jpg';
+    } else if (req.file) {
+        newProfileImage = `/uploads/${req.file.filename}`;
+    }
+
     if (!nickname) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }

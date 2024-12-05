@@ -30,7 +30,7 @@ app.use(session({
 }));
 
 app.use(cors({
-    origin: ['http://localhost:3000','http://13.125.162.98'],
+    origin: ['http://localhost:3000','http://13.125.162.98:3000'],
     credentials: true
 }));
 app.use(express.json());

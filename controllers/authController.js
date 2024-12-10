@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import * as userModel from '../model/userModel.js';
 import { uploadToS3 } from '../utils/fileUtils.js';
+import { DEFAULT_PROFILE_IMAGE } from '../utils/constants.js';
 
 export const getCurrentUser = async (req, res) => {
     if (!req.session.user_id) {
@@ -19,7 +20,7 @@ export const getCurrentUser = async (req, res) => {
                 user_id: user.user_id,
                 email: user.email,
                 nickname: user.nickname,
-                profile_image: user.profile_image || '/uploads/user-profile.jpg',
+                profile_image: user.profile_image || DEFAULT_PROFILE_IMAGE,
             }
         });
     } catch (error) {
@@ -50,7 +51,7 @@ export const register = async (req, res) => {
         // 비밀번호 암호화
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        let profile_image = '/uploads/user-profile.jpg';
+        let profile_image = DEFAULT_PROFILE_IMAGE;
 
         if (req.file) {
             const fileName = `${Date.now()}-${req.file.originalname}`;

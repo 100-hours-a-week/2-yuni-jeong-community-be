@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.705.0",
     "@eslint/eslintrc": "^3.1.0",
     "aws-sdk": "^2.1692.0",
     "bcrypt": "^5.1.1",

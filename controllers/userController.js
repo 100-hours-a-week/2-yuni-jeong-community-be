@@ -2,6 +2,7 @@ import { uploadToS3, deleteFromS3 } from '../utils/fileUtils.js';
 import bcrypt from 'bcrypt';
 import db from '../utils/db.js';
 import * as userModel from '../model/userModel.js';
+import { DEFAULT_PROFILE_IMAGE } from '../utils/constants.js';
 
 // id로 회원 찾기
 export const getUserById = async (user_id) => {
@@ -23,7 +24,7 @@ export const updateUserProfile = async (req, res) => {
 
     let newProfileImage;
     if (req.body.profile_image === 'default') {
-        newProfileImage = '/uploads/user-profile.jpg';
+        newProfileImage = DEFAULT_PROFILE_IMAGE;
     } else if (req.file) {
         const fileName = `${Date.now()}-${req.file.originalname}`;
         newProfileImage = await uploadToS3(req.file.buffer, fileName, req.file.mimetype);
@@ -40,7 +41,7 @@ export const updateUserProfile = async (req, res) => {
         }
 
         // 기존 이미지 삭제
-        if (newProfileImage && user.profile_image && user.profile_image !== '/uploads/user-profile.jpg') {
+        if (newProfileImage && user.profile_image && user.profile_image !== DEFAULT_PROFILE_IMAGE) {
             const oldImageName = user.profile_image.split('/').pop();
             await deleteFromS3(oldImageName);
         }
@@ -111,7 +112,7 @@ export const deleteUserAccount = async (req, res) => {
         }
 
         // 프로필 이미지 삭제
-        if (user.profile_image && user.profile_image !== '/uploads/user-profile.jpg') {
+        if (user.profile_image && user.profile_image !== DEFAULT_PROFILE_IMAGE) {
             const oldImageName = user.profile_image.split('/').pop();
             await deleteFromS3(oldImageName);
         }

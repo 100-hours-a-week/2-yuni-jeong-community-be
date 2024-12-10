@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import * as userModel from '../model/userModel.js';
+import { uploadToS3 } from '../utils/fileUtils.js';
 
 export const getCurrentUser = async (req, res) => {
     if (!req.session.user_id) {
@@ -48,7 +49,13 @@ export const register = async (req, res) => {
         
         // 비밀번호 암호화
         const hashedPassword = await bcrypt.hash(password, 10);
-        const profile_image = req.file ? `/uploads/${req.file.filename}` : '/uploads/user-profile.jpg';
+
+        let profile_image = '/uploads/user-profile.jpg';
+
+        if (req.file) {
+            const fileName = `${Date.now()}-${req.file.originalname}`;
+            profile_image = await uploadToS3(req.file.buffer, fileName, req.file.mimetype);
+        }
         
         const user_id = await userModel.createUser({email, hashedPassword, nickname, profile_image});
 

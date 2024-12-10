@@ -1,4 +1,4 @@
-import { deleteFile, getUploadFilePath } from '../utils/fileUtils.js';
+import { uploadToS3, deleteFromS3 } from '../utils/fileUtils.js';
 import bcrypt from 'bcrypt';
 import db from '../utils/db.js';
 import * as userModel from '../model/userModel.js';
@@ -25,7 +25,8 @@ export const updateUserProfile = async (req, res) => {
     if (req.body.profile_image === 'default') {
         newProfileImage = '/uploads/user-profile.jpg';
     } else if (req.file) {
-        newProfileImage = `/uploads/${req.file.filename}`;
+        const fileName = `${Date.now()}-${req.file.originalname}`;
+        newProfileImage = await uploadToS3(req.file.buffer, fileName, req.file.mimetype);
     }
 
     if (!nickname) {
@@ -40,8 +41,8 @@ export const updateUserProfile = async (req, res) => {
 
         // 기존 이미지 삭제
         if (newProfileImage && user.profile_image && user.profile_image !== '/uploads/user-profile.jpg') {
-            const oldImagePath = getUploadFilePath(user.profile_image);
-            deleteFile(oldImagePath);
+            const oldImageName = user.profile_image.split('/').pop();
+            await deleteFromS3(oldImageName);
         }
 
         // 프로필 업데이트
@@ -111,18 +112,18 @@ export const deleteUserAccount = async (req, res) => {
 
         // 프로필 이미지 삭제
         if (user.profile_image && user.profile_image !== '/uploads/user-profile.jpg') {
-            const profileImagePath = getUploadFilePath(user.profile_image);
-            deleteFile(profileImagePath);
+            const oldImageName = user.profile_image.split('/').pop();
+            await deleteFromS3(oldImageName);
         }
 
         // 게시글 이미지 삭제
         const [postRows] = await db.query('SELECT image_url FROM posts WHERE user_id = ?', [user_id]);
-        postRows.forEach(post => {
+        for (const post of postRows) {
             if (post.image_url) {
-                const postImagePath = getUploadFilePath(post.image_url);
-                deleteFile(postImagePath);
+                const oldImageName = post.image_url.split('/').pop();
+                await deleteFromS3(oldImageName);
             }
-        });
+        }
 
         // 데이터 삭제
         await userModel.deleteUserAccount(user_id);

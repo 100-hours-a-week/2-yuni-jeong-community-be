@@ -1,4 +1,4 @@
-import { deleteFile, getUploadFilePath } from '../utils/fileUtils.js';
+import { uploadToS3, deleteFromS3 } from '../utils/fileUtils.js';
 import * as postModel from '../model/postModel.js';
 import * as commentModel from '../model/commentModel.js';
 
@@ -61,7 +61,12 @@ export const uploadPost = async (req, res) => {
     }
 
     try {
-        const image_url = req.file ? `/uploads/${req.file.filename}` : '';
+        let image_url = '';
+
+        if (req.file) {
+            const fileName = `${Date.now()}-${req.file.originalname}`;
+            image_url = await uploadToS3(req.file.buffer, fileName, req.file.mimetype);
+        }
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
         const post_id = await postModel.uploadPost({ user_id, title, content, image_url, created_at });
@@ -91,8 +96,8 @@ export const deletePost = async (req, res) => {
 
         // 이미지 삭제
         if (post.image_url) {
-            const oldImagePath = getUploadFilePath(post.image_url);
-            deleteFile(oldImagePath);
+            const fileName = post.image_url.split('/').pop();
+            await deleteFromS3(fileName);
         }
 
         // 게시글 삭제
@@ -125,17 +130,21 @@ export const updatePost = async (req, res) => {
             return res.status(403).json({ message: "권한이 없습니다.", data: null });
         }
 
+        let new_image_url = post.image_url;
+
         // 이미지 업데이트
         if (req.file) {
             if (post.image_url) {
-                const oldImagePath = getUploadFilePath(post.image_url);
-                deleteFile(oldImagePath);
+                const fileName = post.image_url.split('/').pop();
+                await deleteFromS3(fileName);
             }
-            post.image_url = `/uploads/${req.file.filename}`;
+
+            const fileName = `${Date.now()}-${req.file.originalname}`;
+            new_image_url = await uploadToS3(req.file.buffer, fileName, req.file.mimetype);
         }
         
         // 게시글 업데이트
-        await postModel.updatePost(post_id, title, content, post.image_url);
+        await postModel.updatePost(post_id, title, content, new_image_url);
 
         res.status(200).json({ message: "수정 완료", data: post });
     } catch (error) {

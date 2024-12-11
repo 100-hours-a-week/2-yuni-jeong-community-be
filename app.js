@@ -66,9 +66,9 @@ app.use(
     )
 );
 
-app.use('/auth', authRoutes);
-app.use('/users', userRoutes);
-app.use('/posts', postRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/posts', postRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 

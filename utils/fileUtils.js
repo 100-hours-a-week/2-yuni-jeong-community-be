@@ -1,4 +1,3 @@
-import AWS from 'aws-sdk';
 import { BUCKET_NAME, CLOUDFRONT_URL } from '../utils/constants.js';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 const s3 = new S3Client({

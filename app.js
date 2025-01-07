@@ -18,6 +18,7 @@ const __dirname = path.dirname(__filename);
 const SESSION_SECRET = process.env.SESSION_SECRET;
 const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 8080
+const EC2_HOST = process.env.EC2_HOST
 dotenv.config();
 
 app.use(session({
@@ -31,7 +32,7 @@ app.use(session({
 }));
 
 app.use(cors({
-    origin: ['http://localhost:3000','http://13.125.162.98:3000'],
+    origin: ['http://localhost:3000',`http://${EC2_HOST}:3000`],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

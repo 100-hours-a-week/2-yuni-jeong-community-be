@@ -1,0 +1,39 @@
+name : 백엔드 배포
+
+on:
+  push:
+    branches:
+      - main
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: 코드 체크아웃
+              uses: actions/checkout@v2
+            
+            - name: AWS 자격 증명
+              uses: aws-actions/configure-aws-credentials@v1
+              with:
+                aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                aws-region: ap-northeast-2
+            
+            - name: Docker 이미지 빌드 및 푸시
+              run: |
+                aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URI }}
+                docker build -t community/backend .
+                docker tag community/backend:latest ${{ secrets.ECR_REPOSITORY_URI }}:latest
+                docker push ${{ secrets.ECR_REPOSITORY_URI }}:latest
+
+            - name: EC2에 배포
+              uses: appleboy/ssh-action@v0.1.10
+              with:
+                host: ${{ secrets.EC2_HOST }}
+                username: ${{ secrets.EC2_USERNAME }}
+                key: ${{ secrets.EC2_PRIVATE_KEY }}
+                script: |
+                    docker pull ${{ secrets.ECR_REPOSITORY_URI }}:latest
+                    docker stop backend-container || true # 기존 컨테이너가 있으면 중지
+                    docker rm backend-container || true # 기존 컨테이너가 있으면 삭제
+                    docker run -d --name backend-container -p 8080:8080 --env-file ${{ secrets.ENV_FILE_PATH }} ${{ secrets.ECR_REPOSITORY_URI }}:latest

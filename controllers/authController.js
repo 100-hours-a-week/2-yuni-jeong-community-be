@@ -2,6 +2,7 @@ import bcrypt from 'bcrypt';
 import * as userModel from '../model/userModel.js';
 import { uploadToS3 } from '../utils/fileUtils.js';
 import { DEFAULT_PROFILE_IMAGE } from '../utils/constants.js';
+import { sanitizeInput } from '../utils/sanitize.js';
 
 export const getCurrentUser = async (req, res) => {
     if (!req.session.user_id) {
@@ -31,7 +32,8 @@ export const getCurrentUser = async (req, res) => {
 
 // 회원가입
 export const register = async (req, res) => {
-    const { email, password, nickname } = req.body;
+    const { email, password } = req.body;
+    const nickname = sanitizeInput(req.body.nickname);
 
     // 필수 필드 체크
     if (!email || !password || !nickname) {

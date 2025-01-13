@@ -1,6 +1,7 @@
 import { uploadToS3, deleteFromS3 } from '../utils/fileUtils.js';
 import * as postModel from '../model/postModel.js';
 import * as commentModel from '../model/commentModel.js';
+import { sanitizeInput } from '../utils/sanitize.js';
 
 /* -------------------------- 게시글 API -------------------------- */
 
@@ -53,7 +54,8 @@ export const getPostById = async (req, res) => {
 
 // 게시글 등록
 export const uploadPost = async (req, res) => {
-    const { title, content } = req.body;
+    const title = sanitizeInput(req.body.title);
+    const content = sanitizeInput(req.body.content);
     const user_id = req.session.user_id;
 
     if (!user_id || !title || !content) {
@@ -112,7 +114,8 @@ export const deletePost = async (req, res) => {
 // 게시글 수정
 export const updatePost = async (req, res) => {
     const post_id = req.params.post_id;
-    const { title, content } = req.body;
+    const title = sanitizeInput(req.body.title);
+    const content = sanitizeInput(req.body.content);
     const user_id = req.session.user_id;
 
     if (!title || !content) {
@@ -159,7 +162,7 @@ export const updatePost = async (req, res) => {
 // 댓글 작성
 export const createComment = async (req, res) => {
     const post_id = req.params.post_id;
-    const { content } = req.body;
+    const content = sanitizeInput(req.body.content);
     const user_id = req.session.user_id;
 
     if (!user_id || !content) {
@@ -196,7 +199,7 @@ export const getCommentsByPostId = async (req, res) => {
 export const updateComment = async (req, res) => {
     const post_id = req.params.post_id;
     const comment_id = req.params.comment_id;
-    const { content } = req.body;
+    const content = sanitizeInput(req.body.content);
     const user_id = req.session.user_id;
 
     if (!content) {

@@ -36,6 +36,7 @@ jobs:
                 aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
                 aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                 deployment_package: "Dockerrun.aws.json"
+                use_existing_version_if_available: "true"
 
             # - name: EC2에 배포
             #   uses: appleboy/ssh-action@v0.1.10

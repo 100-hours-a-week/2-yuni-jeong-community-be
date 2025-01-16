@@ -26,15 +26,26 @@ jobs:
                 docker tag community/backend:latest ${{ secrets.ECR_REPOSITORY_URI }}:latest
                 docker push ${{ secrets.ECR_REPOSITORY_URI }}:latest
 
-            - name: EC2에 배포
-              uses: appleboy/ssh-action@v0.1.10
+            - name: 빈스톡에 배포
+              uses: einaregilsson/beanstalk-deploy@v21
               with:
-                host: ${{ secrets.EC2_HOST }}
-                username: ${{ secrets.EC2_USERNAME }}
-                key: ${{ secrets.EC2_PRIVATE_KEY }}
-                script: |
-                    aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URI }}
-                    docker pull ${{ secrets.ECR_REPOSITORY_URI }}:latest
-                    docker stop backend-container || true # 기존 컨테이너가 있으면 중지
-                    docker rm backend-container || true # 기존 컨테이너가 있으면 삭제
-                    docker run -d --name backend-container -p 8080:8080 --env-file ${{ secrets.ENV_FILE_PATH }} ${{ secrets.ECR_REPOSITORY_URI }}:latest
+                application_name: "community"
+                environment_name: "community-backend"
+                version_label: "backend-v1.0.${{ github.run_number }}"
+                region: "ap-northeast-2"
+                aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                deployment_package: "Dockerrun.aws.json"
+
+            # - name: EC2에 배포
+            #   uses: appleboy/ssh-action@v0.1.10
+            #   with:
+            #     host: ${{ secrets.EC2_HOST }}
+            #     username: ${{ secrets.EC2_USERNAME }}
+            #     key: ${{ secrets.EC2_PRIVATE_KEY }}
+            #     script: |
+            #         aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URI }}
+            #         docker pull ${{ secrets.ECR_REPOSITORY_URI }}:latest
+            #         docker stop backend-container || true # 기존 컨테이너가 있으면 중지
+            #         docker rm backend-container || true # 기존 컨테이너가 있으면 삭제
+            #         docker run -d --name backend-container -p 8080:8080 --env-file ${{ secrets.ENV_FILE_PATH }} ${{ secrets.ECR_REPOSITORY_URI }}:latest

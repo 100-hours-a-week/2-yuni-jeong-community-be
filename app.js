@@ -32,7 +32,7 @@ app.use(session({
 }));
 
 app.use(cors({
-    origin: ['http://localhost:3000',`http://${EC2_HOST}:3000`],
+    origin: [process.env.FRONTEND_URL || 'http://localhost:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

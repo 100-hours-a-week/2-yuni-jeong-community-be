@@ -72,6 +72,9 @@ app.use('/api/users', userRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: "Healthy" });
+});
 
 app.listen(PORT, () => {
     console.log(`http://${HOST}:${PORT} 에서 서버 실행 중`);

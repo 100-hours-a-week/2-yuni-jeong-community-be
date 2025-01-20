@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import db from '../utils/db.js';
 import * as userModel from '../model/userModel.js';
 import { DEFAULT_PROFILE_IMAGE } from '../utils/constants.js';
+import { sanitizeInput } from '../utils/sanitize.js';
 
 // id로 회원 찾기
 export const getUserById = async (user_id) => {
@@ -20,7 +21,7 @@ export const updateUserProfile = async (req, res) => {
         return res.status(401).json({ message: "로그인이 필요합니다.", data: null });
     }
 
-    const { nickname } = req.body;
+    const nickname = sanitizeInput(req.body.nickname);
 
     let newProfileImage;
     if (req.body.profile_image === 'default') {

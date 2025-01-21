@@ -33,6 +33,12 @@ app.use(session({
     }
 }));
 
+app.use((req, res, next) => {
+    console.log('Session ID:', req.sessionID);
+    console.log('Session:', req.session);
+    next();
+});
+
 app.use(cors({
     origin: [process.env.FRONTEND_URL || 'http://localhost:3000'],
     credentials: true,

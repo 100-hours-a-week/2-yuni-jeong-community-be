@@ -24,7 +24,7 @@ dotenv.config();
 app.use(session({
     secret: SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: { 
         httpOnly: true,
         secure: false,

@@ -27,8 +27,9 @@ app.use(session({
     saveUninitialized: false,
     cookie: { 
         httpOnly: true,
-        secure: true,
-        sameSite: 'none',
+        secure: false,
+        sameSite: 'lax',
+        domain: '.ap-northeast-2.elasticbeanstalk.com',
         maxAge: 24 * 60 * 60 * 1000
     }
 }));
@@ -40,7 +41,7 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-    origin: [process.env.FRONTEND_URL || 'http://localhost:3000'],
+    origin: 'http://yuniverse.ap-northeast-2.elasticbeanstalk.com',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

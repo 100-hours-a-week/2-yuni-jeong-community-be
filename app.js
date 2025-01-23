@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
 const SESSION_SECRET = process.env.SESSION_SECRET;
 const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 8080
-const EC2_HOST = process.env.EC2_HOST
+
 dotenv.config();
 
 app.use(session({
@@ -28,9 +28,8 @@ app.use(session({
     cookie: { 
         httpOnly: true,
         secure: true,
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-        maxAge: 24 * 60 * 60 * 1000,
-        domain: '.elasticbeanstalk.com'
+        sameSite: 'none',
+        maxAge: 24 * 60 * 60 * 1000
     }
 }));
 

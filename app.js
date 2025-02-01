@@ -29,7 +29,6 @@ app.use(session({
         httpOnly: true,
         secure: false,
         sameSite: 'lax',
-        domain: '.ap-northeast-2.elasticbeanstalk.com',
         maxAge: 24 * 60 * 60 * 1000
     }
 }));
@@ -41,7 +40,7 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-    origin: 'http://Community-env.eba-qzp5vchg.ap-northeast-2.elasticbeanstalk.com',
+    origin: 'http://yuniiverse.ap-northeast-2.elasticbeanstalk.com',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

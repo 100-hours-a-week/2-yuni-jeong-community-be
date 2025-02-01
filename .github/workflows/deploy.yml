@@ -1,52 +1,31 @@
-name : 백엔드 배포
+name: 백엔드 Docker 이미지 빌드 및 ECR 푸시
 
 on:
   push:
     branches:
       - main
+
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
+  build-and-push:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: 코드 체크아웃
-              uses: actions/checkout@v2
-            
-            - name: AWS 자격 증명
-              uses: aws-actions/configure-aws-credentials@v1
-              with:
-                aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                aws-region: ap-northeast-2
-            
-            - name: Docker 이미지 빌드 및 푸시
-              run: |
-                aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URI }}
-                docker build -t community/backend .
-                docker tag community/backend:latest ${{ secrets.ECR_REPOSITORY_URI }}:latest
-                docker push ${{ secrets.ECR_REPOSITORY_URI }}:latest
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v2
 
-            - name: 빈스톡에 배포
-              uses: einaregilsson/beanstalk-deploy@v21
-              with:
-                application_name: "community"
-                environment_name: "community-be"
-                version_label: "backend-v1.0.${{ github.run_number }}-${{ github.sha }}"
-                region: "ap-northeast-2"
-                aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                deployment_package: "Dockerrun.aws.json"
-                use_existing_version_if_available: "true"
+      - name: AWS 자격 증명 설정
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
 
-            # - name: EC2에 배포
-            #   uses: appleboy/ssh-action@v0.1.10
-            #   with:
-            #     host: ${{ secrets.EC2_HOST }}
-            #     username: ${{ secrets.EC2_USERNAME }}
-            #     key: ${{ secrets.EC2_PRIVATE_KEY }}
-            #     script: |
-            #         aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URI }}
-            #         docker pull ${{ secrets.ECR_REPOSITORY_URI }}:latest
-            #         docker stop backend-container || true # 기존 컨테이너가 있으면 중지
-            #         docker rm backend-container || true # 기존 컨테이너가 있으면 삭제
-            #         docker run -d --name backend-container -p 8080:8080 --env-file ${{ secrets.ENV_FILE_PATH }} ${{ secrets.ECR_REPOSITORY_URI }}:latest
+      - name: Docker 이미지 빌드 및 ECR 푸시
+        env:
+          ECR_REGISTRY: 034362052077.dkr.ecr.ap-northeast-2.amazonaws.com
+          ECR_REPOSITORY: community/backend
+          IMAGE_TAG: latest
+        run: |
+          aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin $ECR_REGISTRY
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG

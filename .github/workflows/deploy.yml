@@ -29,3 +29,10 @@ jobs:
           aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin $ECR_REGISTRY
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+      - name: Community 리포지터리 배포 트리거 🚀
+        run: |
+          curl -X POST -H "Accept: application/vnd.github.everest-preview+json" \
+               -H "Authorization: token ${{ secrets.GH_PERSONAL_ACCESS_TOKEN }}" \
+               --data '{"event_type": "deploy"}' \
+               https://api.github.com/repos/hyoon1129/community/dispatches

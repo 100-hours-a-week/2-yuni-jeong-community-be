@@ -41,7 +41,7 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-    origin: 'http://yuniverse.ap-northeast-2.elasticbeanstalk.com',
+    origin: 'http://Community-env.eba-qzp5vchg.ap-northeast-2.elasticbeanstalk.com',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

@@ -37,3 +37,4 @@ jobs:
                 aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                 deployment_package: "Dockerrun.aws.json"
                 use_existing_version_if_available: "true"
+                wait_for_environment_recovery: 180

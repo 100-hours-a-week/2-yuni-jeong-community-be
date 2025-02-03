@@ -11,11 +11,22 @@ import morgan from 'morgan';
 import fileSystem from 'fs';
 import moment from 'moment-timezone';
 import session from 'express-session';
-import MySQLStore from 'express-mysql-session';
+import mysqlSession from 'express-mysql-session';  
+
+dotenv.config();
+
+const MySQLStore = mysqlSession(session);
+
+const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const SESSION_SECRET = process.env.SESSION_SECRET;
+const HOST = process.env.HOST || 'localhost';
+const PORT = process.env.PORT || 8080
 
 const options = {
     host: process.env.DB_HOST,
-    port: process.env.DB_PORT || 3306,
+    port: process.env.DB_PORT || 13306,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
@@ -25,16 +36,6 @@ const options = {
 };
 
 const sessionStore = new MySQLStore(options);
-
-const app = express();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const SESSION_SECRET = process.env.SESSION_SECRET;
-const HOST = process.env.HOST || 'localhost';
-const PORT = process.env.PORT || 8080
-
-
-dotenv.config();
 
 app.use((req, res, next) => {
     console.log('Session ID:', req.sessionID);

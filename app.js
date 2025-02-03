@@ -24,6 +24,8 @@ const SESSION_SECRET = process.env.SESSION_SECRET;
 const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 8080
 
+app.set('trust proxy', 1);
+
 const options = {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT || 13306,
@@ -33,6 +35,11 @@ const options = {
     clearExpired: true,
     checkExpirationInterval: 900000, // 15분마다 만료된 세션 정리
     expiration: 86400000, // 세션 만료 기간 (1일)
+
+    connectionLimit: 10,
+    waitForConnections: true,
+    queueLimit: 0,
+    reconnect: true
 };
 
 const sessionStore = new MySQLStore(options);
@@ -71,8 +78,8 @@ app.use(session({
     saveUninitialized: false,
     cookie: { 
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'None',
+        secure: false,
+        sameSite: 'Lax',
         domain: '.hello-yuniverse.site',
         maxAge: 24 * 60 * 60 * 1000,
     }

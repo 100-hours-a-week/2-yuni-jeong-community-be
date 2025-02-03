@@ -27,10 +27,10 @@ app.use(session({
     saveUninitialized: false,
     cookie: { 
         httpOnly: true,
-        secure: true,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'None',
-        domain: '.hello-yuniverse.site',
-        maxAge: 24 * 60 * 60 * 1000
+        domain: 'api.hello-yuniverse.site',
+        maxAge: 24 * 60 * 60 * 1000,
     }
 }));
 
@@ -40,16 +40,25 @@ app.use((req, res, next) => {
     next();
 });
 
+const allowedOrigins = [
+    'https://hello-yuniverse.site',
+    'https://www.hello-yuniverse.site',
+    'http://localhost:3000'
+];
+
 app.use(cors({
-    origin: [
-        'https://hello-yuniverse.site',
-        'https://www.hello-yuniverse.site',
-        'localhost:3000'
-      ],
+    origin: function (origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
+app.options('*', cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 

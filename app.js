@@ -21,19 +21,6 @@ const PORT = process.env.PORT || 8080
 
 dotenv.config();
 
-app.use(session({
-    secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    cookie: { 
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'None',
-        domain: 'api.hello-yuniverse.site',
-        maxAge: 24 * 60 * 60 * 1000,
-    }
-}));
-
 app.use((req, res, next) => {
     console.log('Session ID:', req.sessionID);
     console.log('Session:', req.session);
@@ -59,6 +46,22 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.options('*', cors());
+
+
+app.use(session({
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'None',
+        domain: '.hello-yuniverse.site',
+        maxAge: 24 * 60 * 60 * 1000,
+    }
+}));
+
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 

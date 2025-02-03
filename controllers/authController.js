@@ -89,6 +89,11 @@ export const login = async (req, res) => {
         }
 
         req.session.user_id = user.user_id;
+
+        console.log('Login request received');
+        console.log('Session ID:', req.sessionID);
+        console.log('Session Data:', req.session);
+        
         res.status(200).json({ message: "로그인 성공", data: { user_id: user.user_id } });
     } catch (err) {
         console.error(err);

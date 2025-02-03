@@ -1,7 +1,6 @@
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import session from 'express-session';
 import dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
@@ -18,6 +17,9 @@ const __dirname = path.dirname(__filename);
 const SESSION_SECRET = process.env.SESSION_SECRET;
 const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 8080
+const session = require('express-session')
+const MemoryStore = require('memorystore')(session)
+
 
 dotenv.config();
 
@@ -58,7 +60,10 @@ app.use(session({
         sameSite: 'None',
         domain: '.hello-yuniverse.site',
         maxAge: 24 * 60 * 60 * 1000,
-    }
+    },
+    store: new MemoryStore({
+        checkPeriod: 86400000
+    }),
 }));
 
 

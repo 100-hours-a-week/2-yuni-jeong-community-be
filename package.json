@@ -26,6 +26,7 @@
     "eslint-config-airbnb": "^19.0.4",
     "eslint-plugin-prettier": "^5.2.1",
     "express": "^4.21.1",
+    "express-mysql-session": "^3.0.3",
     "express-session": "^1.18.1",
     "memorystore": "^1.6.7",
     "moment": "^2.30.1",

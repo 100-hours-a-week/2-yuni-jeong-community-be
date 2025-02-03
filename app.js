@@ -10,6 +10,21 @@ import { createStream } from 'rotating-file-stream';
 import morgan from 'morgan';
 import fileSystem from 'fs';
 import moment from 'moment-timezone';
+import session from 'express-session';
+import MySQLStore from 'express-mysql-session';
+
+const options = {
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    clearExpired: true,
+    checkExpirationInterval: 900000, // 15분마다 만료된 세션 정리
+    expiration: 86400000, // 세션 만료 기간 (1일)
+};
+
+const sessionStore = new MySQLStore(options);
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -17,8 +32,6 @@ const __dirname = path.dirname(__filename);
 const SESSION_SECRET = process.env.SESSION_SECRET;
 const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 8080
-const session = require('express-session')
-const MemoryStore = require('memorystore')(session)
 
 
 dotenv.config();
@@ -52,18 +65,16 @@ app.options('*', cors());
 
 app.use(session({
     secret: SESSION_SECRET,
-    resave: true,
-    saveUninitialized: true,
+    store: sessionStore,
+    resave: false,
+    saveUninitialized: false,
     cookie: { 
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'None',
         domain: '.hello-yuniverse.site',
         maxAge: 24 * 60 * 60 * 1000,
-    },
-    store: new MemoryStore({
-        checkPeriod: 86400000
-    }),
+    }
 }));
 
 

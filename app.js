@@ -27,8 +27,9 @@ app.use(session({
     saveUninitialized: false,
     cookie: { 
         httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
+        secure: true,
+        sameSite: 'None',
+        domain: '.hello-yuniverse.site',
         maxAge: 24 * 60 * 60 * 1000
     }
 }));
@@ -40,7 +41,11 @@ app.use((req, res, next) => {
 });
 
 app.use(cors({
-    origin: 'http://yuniiverse.ap-northeast-2.elasticbeanstalk.com',
+    origin: [
+        'https://hello-yuniverse.site',
+        'https://www.hello-yuniverse.site',
+        'localhost:3000'
+      ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

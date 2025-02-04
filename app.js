@@ -44,11 +44,6 @@ const options = {
 
 const sessionStore = new MySQLStore(options);
 
-app.use((req, res, next) => {
-    console.log('Session ID:', req.sessionID);
-    console.log('Session:', req.session);
-    next();
-});
 
 const allowedOrigins = [
     'https://hello-yuniverse.site',
@@ -80,7 +75,7 @@ app.use(session({
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'Lax',
-        domain: '.hello-yuniverse.site',
+        // domain: '.hello-yuniverse.site',
         maxAge: 24 * 60 * 60 * 1000,
     }
 }));

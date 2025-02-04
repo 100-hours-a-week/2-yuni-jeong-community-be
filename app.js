@@ -11,7 +11,9 @@ import morgan from 'morgan';
 import fileSystem from 'fs';
 import moment from 'moment-timezone';
 import session from 'express-session';
-import mysqlSession from 'express-mysql-session';  
+import mysqlSession from 'express-mysql-session';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 
 dotenv.config();
 
@@ -51,6 +53,8 @@ const allowedOrigins = [
     'http://localhost:3000'
 ];
 
+app.use(helmet());
+
 app.use(cors({
     origin: function (origin, callback) {
         if (!origin || allowedOrigins.includes(origin)) {
@@ -66,6 +70,27 @@ app.use(cors({
 app.options('*', cors());
 
 
+// 로그인, 회원가입 rate limit
+const authLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10분
+    max: 5,
+    message: { message: "너무 많은 로그인/회원가입 시도가 감지되었습니다. 5분 후 다시 시도해주세요." },
+});
+
+// 전체 api rate limit
+const apiLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10분
+    max: 100,
+    message: { message: "너무 많은 요청을 보냈습니다. 10분 후 다시 시도해주세요." },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/signup', authLimiter);
+
+app.use('/api/', apiLimiter);
+
 app.use(session({
     secret: SESSION_SECRET,
     store: sessionStore,
@@ -80,9 +105,9 @@ app.use(session({
     }
 }));
 
-
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
+
 
 // 로그 파일 생성
 morgan.token('date', (request, response, timezone) => {

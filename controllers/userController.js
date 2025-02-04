@@ -47,6 +47,10 @@ export const updateUserProfile = async (req, res) => {
             await deleteFromS3(oldImageName);
         }
 
+        if (!nickname && newProfileImage === user.profile_image) {
+            return res.status(400).json({ message: "변경된 내용이 없습니다.", data: null });
+        }
+
         // 프로필 업데이트
         await userModel.updateUserProfile(req.session.user_id, nickname, newProfileImage || user.profile_image)
 

@@ -134,6 +134,7 @@ export const updatePost = async (req, res) => {
         }
 
         let new_image_url = post.image_url;
+        let new_file_name = post.image_url ? post.image_url.split('/').pop() : null;
 
         // 이미지 업데이트
         if (req.file) {
@@ -142,14 +143,24 @@ export const updatePost = async (req, res) => {
                 await deleteFromS3(fileName);
             }
 
-            const fileName = `${Date.now()}-${req.file.originalname}`;
-            new_image_url = await uploadToS3(req.file.buffer, fileName, req.file.mimetype);
+            new_file_name = req.file.originalname.replace(/\s+/g, '_'); 
+            new_image_url = await uploadToS3(req.file.buffer, new_file_name, req.file.mimetype);
         }
         
         // 게시글 업데이트
         await postModel.updatePost(post_id, title, content, new_image_url);
 
-        res.status(200).json({ message: "수정 완료", data: post });
+        const updatedPost = await postModel.getPostById(post_id);
+
+
+        res.status(200).json({ 
+            message: "수정 완료", 
+            data: { 
+                post_id: updatedPost.post_id, 
+                image_url: updatedPost.image_url,
+                file_name: new_file_name
+            } 
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "서버 에러", data: null });

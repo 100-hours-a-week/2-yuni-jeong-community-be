@@ -78,7 +78,7 @@ app.use(session({
     saveUninitialized: false,
     cookie: { 
         httpOnly: true,
-        secure: false,
+        secure: process.env.NODE_ENV === 'production',
         sameSite: 'Lax',
         domain: '.hello-yuniverse.site',
         maxAge: 24 * 60 * 60 * 1000,

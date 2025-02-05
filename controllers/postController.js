@@ -62,6 +62,15 @@ export const uploadPost = async (req, res) => {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }
 
+    if (title.length > 50) {
+        return res.status(400).json({ message: "제목은 최대 26자까지 작성 가능합니다.", data: null });
+    }
+
+    if (content.length > 1500) {
+        return res.status(400).json({ message: "본문은 최대 1500자까지 작성 가능합니다.", data: null });
+    }
+
+
     try {
         let image_url = '';
 
@@ -122,6 +131,15 @@ export const updatePost = async (req, res) => {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }
 
+    if (title.length > 50) {
+        return res.status(400).json({ message: "제목은 최대 26자까지 작성 가능합니다.", data: null });
+    }
+
+    if (content.length > 1500) {
+        return res.status(400).json({ message: "본문은 최대 1500자까지 작성 가능합니다.", data: null });
+    }
+
+
     try {
         const post = await postModel.getPostById(post_id);
         console.log(post)
@@ -180,6 +198,10 @@ export const createComment = async (req, res) => {
         return res.status(400).json({ message: "잘못된 요청", data: null });
     }
 
+    if (content.length > 300) {
+        return res.status(400).json({ message: "댓글은 최대 300자까지 작성 가능합니다.", data: null });
+    }
+
     try {
         const created_at = new Date().toISOString().slice(0, 19).replace('T', ' ');
 
@@ -215,6 +237,10 @@ export const updateComment = async (req, res) => {
 
     if (!content) {
         return res.status(400).json({ message: "잘못된 요청", data: null });
+    }
+
+    if (content.length > 300) {
+        return res.status(400).json({ message: "댓글은 최대 300자까지 작성 가능합니다.", data: null });
     }
 
     try {

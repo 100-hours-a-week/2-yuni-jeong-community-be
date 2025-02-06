@@ -79,7 +79,7 @@ const authLimiter = rateLimit({
 
 // 전체 api rate limit
 const apiLimiter = rateLimit({
-    windowMs: 10 * 60 * 1000, // 10분
+    windowMs: 1 * 60 * 1000, // 1분
     max: 100,
     message: { message: "너무 많은 요청을 보냈습니다. 10분 후 다시 시도해주세요." },
     standardHeaders: true,

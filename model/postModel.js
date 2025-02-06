@@ -33,7 +33,7 @@ export const uploadPost = async ({ user_id, title, content, image_url, created_a
     const [result] = await db.query(
         `
         INSERT INTO posts (user_id, title, content, image_url, likes, views, comments_count, created_at)
-        VALUES (?, ?, ?, ?, 0, 0, 0, ?)
+        VALUES (?, ?, ?, ?, 0, 1, 0, ?)
         `,
         [user_id, title, content, image_url, created_at]
     );

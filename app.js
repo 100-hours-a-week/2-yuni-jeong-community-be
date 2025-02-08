@@ -47,24 +47,10 @@ const options = {
 
 const sessionStore = new MySQLStore(options);
 
-
-const allowedOrigins = [
-    'https://hello-yuniverse.site',
-    'https://www.hello-yuniverse.site',
-    'http://localhost:3000',
-    `http://${EC2_HOST}:3000`
-];
-
 app.use(helmet());
 
 app.use(cors({
-    origin: function (origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
+    origin: ['http://localhost:3000', `http://${EC2_HOST}:3000`],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']

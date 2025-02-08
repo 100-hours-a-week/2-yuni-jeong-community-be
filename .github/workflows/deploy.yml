@@ -3,7 +3,7 @@ name : 백엔드 배포
 on:
   push:
     branches:
-      - main
+      - deploy/docker-ec2
 jobs:
     deploy:
         runs-on: ubuntu-latest
@@ -26,15 +26,26 @@ jobs:
                 docker tag community/backend:latest ${{ secrets.ECR_REPOSITORY_URI }}:latest
                 docker push ${{ secrets.ECR_REPOSITORY_URI }}:latest
 
-            - name: 빈스톡에 배포
-              uses: einaregilsson/beanstalk-deploy@v21
+            - name: EC2에 배포
+              uses: appleboy/ssh-action@v0.1.10
               with:
-                application_name: "community"
-                environment_name: "community-be"
-                version_label: "backend-v1.0.${{ github.run_number }}-${{ github.sha }}"
-                region: "ap-northeast-2"
-                aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                deployment_package: "Dockerrun.aws.json"
-                use_existing_version_if_available: "true"
-                wait_for_environment_recovery: 180
+                host: ${{ secrets.EC2_HOST }}
+                username: ${{ secrets.EC2_USERNAME }}
+                key: ${{ secrets.EC2_PRIVATE_KEY }}
+                script: |
+                    # 기존 컨테이너 중지 및 삭제
+                    docker stop backend-container || true
+                    docker rm backend-container || true
+
+                    # 기존 이미지 삭제 (디스크 공간 확보)
+                    docker rmi $(docker images -q) || true
+
+                    # ECR에서 최신 이미지 가져오기
+                    aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URI }}
+                    docker pull ${{ secrets.ECR_REPOSITORY_URI }}:latest
+
+                    # 새로운 컨테이너 실행
+                    docker run -d --name backend-container -p 8080:8080 --env-file /home/ec2-user/.env ${{ secrets.ECR_REPOSITORY_URI }}:latest
+
+                    # 실행된 컨테이너 확인
+                    docker ps -a

@@ -25,6 +25,7 @@ const __dirname = path.dirname(__filename);
 const SESSION_SECRET = process.env.SESSION_SECRET;
 const HOST = process.env.HOST || 'localhost';
 const PORT = process.env.PORT || 8080
+const EC2_HOST = process.env.EC2_HOST
 
 app.set('trust proxy', 1);
 
@@ -50,7 +51,8 @@ const sessionStore = new MySQLStore(options);
 const allowedOrigins = [
     'https://hello-yuniverse.site',
     'https://www.hello-yuniverse.site',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    `http://${EC2_HOST}:3000`
 ];
 
 app.use(helmet());
@@ -98,9 +100,8 @@ app.use(session({
     saveUninitialized: false,
     cookie: { 
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
         sameSite: 'Lax',
-        // domain: '.hello-yuniverse.site',
+        secure: false,
         maxAge: 24 * 60 * 60 * 1000,
     }
 }));

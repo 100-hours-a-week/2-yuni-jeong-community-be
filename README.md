@@ -1,7 +1,6 @@
 ## **🧑‍🚀 개요**
 
-YUNIVERSE 커뮤니티는 사용자들이 자유롭게 의견을 남기고 서로 공유할 수 있는 커뮤니티입니다.<br>
-이곳에서 사용자가 원하는 대로 진지한 토론부터 가벼운 수다까지 편하게 이야기를 나눌 수 있습니다.
+YUNIVERSE 커뮤니티는 사용자들이 자유롭게 의견을 남기고 서로 공유할 수 있는 커뮤니티입니다.
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/18b49944-35ad-4d2f-a9b9-9c79d6571dd2" width="45%"/>
@@ -37,6 +36,10 @@ YUNIVERSE 커뮤니티는 사용자들이 자유롭게 의견을 남기고 서�
 ## 📚 API 명세서
 
 [API 명세서 바로가기](https://docs.google.com/spreadsheets/d/1f3hdD6YRIk1bbXVnr2VM5TaerXQaYl9L1p6SUEIWuMc/edit?gid=1878554884#gid=1878554884)
+
+
+## 🗂️ 포트폴리오
+[YUNIVERSE Notion 포트폴리오 바로가기](https://towering-canvas-e6a.notion.site/YUNIVERSE-198ab3e04e5180dab99ceb593d5c5330?pvs=74)
 
 ## 🎥 소개 영상
 [소개 영상 바로가기](https://drive.google.com/file/d/1MwC9VxA4xt1x53nneWBQRIIzJOQN6nAh/view?usp=sharing)

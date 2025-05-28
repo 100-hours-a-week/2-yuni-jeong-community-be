@@ -1,41 +1,46 @@
-# 2-yuni-jeong-community-be
-커뮤니티 프로젝트 백엔드 리포지터리입니다.
+## **🧑‍🚀 개요**
+
+YUNIVERSE 커뮤니티는 사용자들이 자유롭게 의견을 남기고 서로 공유할 수 있는 커뮤니티입니다.<br>
+이곳에서 사용자가 원하는 대로 진지한 토론부터 가벼운 수다까지 편하게 이야기를 나눌 수 있습니다.
+
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/18b49944-35ad-4d2f-a9b9-9c79d6571dd2" width="45%"/>
+  &nbsp;
+  <img src="https://github.com/user-attachments/assets/6d0889f9-e99a-43bc-a2a8-4b882a989538" width="45%"/>
+</p>
+
+## **📆 개발 인원 및 기간**
+
+- **개발 인원**: 1인 ([정혜윤 / @hyoon1129](https://github.com/hyoon1129))
+- **개발 기간** : 2025.11 ~ 2025.02
 
 ## 🛠️ Stack
-![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
+
+### 🖥️ Frontend
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+
+### ⚙️ Backend
+![Express.js](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)
+![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
+
+### ☁️ Deployment & DevOps
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Nginx](https://img.shields.io/badge/Nginx-009639?style=for-the-badge&logo=nginx&logoColor=white)
+![AWS Elastic Beanstalk](https://img.shields.io/badge/AWS_Elastic_Beanstalk-FF9900?style=for-the-badge&logo=amazon-aws&logoColor=white)
+![AWS ECR](https://img.shields.io/badge/AWS_ECR-527FFF?style=for-the-badge&logo=amazon-aws&logoColor=white)
 ![AWS RDS](https://img.shields.io/badge/AWS_RDS-527FFF?style=for-the-badge&logo=amazon-aws&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
+
+## 📚 API 명세서
+
+[API 명세서 바로가기](https://docs.google.com/spreadsheets/d/1f3hdD6YRIk1bbXVnr2VM5TaerXQaYl9L1p6SUEIWuMc/edit?gid=1878554884#gid=1878554884)
 
 ## 🎥 소개 영상
 [소개 영상 바로가기](https://drive.google.com/file/d/1MwC9VxA4xt1x53nneWBQRIIzJOQN6nAh/view?usp=sharing)
 
-## 🌎 실행 방법
-**1. git clone**
-```bash
-git clone https://github.com/100-hours-a-week/2-yuni-jeong-community-be.git
-```
-
-**2. 루트 디렉토리에 .env 파일 만들고 환경변수 설정**
-```env
-PORT=8080                     # 사용할 포트 번호
-SESSION_SECRET=secret-key     # 세션 시크릿 키
-
-// 디비 연결 정보 작성
-DB_HOST=localhost              # 데이터베이스 호스트
-DB_USER=root                   # 데이터베이스 사용자명
-DB_PASSWORD=password           # 데이터베이스 비밀번호
-DB_NAME=database_name          # 데이터베이스 이름
-DB_PORT=3306                   # 데이터베이스 포트
-```
-
-**3. 의존성 설치**
-```bash
-npm install
-```
-
-**4. 실행**
-```bash
-npm run start
-```
 
 ## 👨‍💻 프론트엔드 리포지터리 링크
 https://github.com/100-hours-a-week/2-yuni-jeong-community-fe
